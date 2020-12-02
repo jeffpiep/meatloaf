@@ -91,7 +91,7 @@ void Interface::sendDeviceInfo()
 	debugPrintf("\r\nsendDeviceInfo:\r\n");
 
 	// Reset basic memory pointer:
-	word basicPtr = C64_BASIC_START;
+	uint16_t basicPtr = C64_BASIC_START;
 
     FSInfo64 fs_info;
     m_fileSystem->info64 ( fs_info );
@@ -168,7 +168,7 @@ void Interface::sendDeviceStatus()
 	debugPrintf("\r\nsendDeviceStatus:\r\n");
 
 	// Reset basic memory pointer:
-	word basicPtr = C64_BASIC_START;
+	uint16_t basicPtr = C64_BASIC_START;
 
 	// Send load address
 	m_iec.send(C64_BASIC_START bitand 0xff);
@@ -614,7 +614,7 @@ void Interface::sendListing()
 	String extension = "DIR";
 
 	// Reset basic memory pointer:
-	word basicPtr = C64_BASIC_START;
+	uint16_t basicPtr = C64_BASIC_START;
 
 	// Send load address
 	m_iec.send(C64_BASIC_START bitand 0xff);
@@ -852,7 +852,7 @@ void Interface::sendListingHTTP()
 	m_lineBuffer = payload.readStringUntil('\n');
 
 	// Reset basic memory pointer:
-	word basicPtr = C64_BASIC_START;
+	uint16_t basicPtr = C64_BASIC_START;
 
 	// Send load address
 	m_iec.send(C64_BASIC_START bitand 0xff);
