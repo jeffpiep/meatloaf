@@ -7,8 +7,8 @@
 #define PRODUCT_ID      "MEAT LOAF 64"
 #define FW_VERSION      "20200923.01"  // Dynamically set at compile time in "platformio.ini"
 //#define UPDATE_URL      "http://c64.idolpx.com/fw/?p=MeatLoaf64&d={{DEVICE_ID}}&a="
-//#define UPDATE_URL      "http://c64.idolpx.com/fw/meatloaf64.4MB.bin"
-#define UPDATE_URL      "http://c64.idolpx.com/fw/meatloaf64.16MB.bin"
+#define UPDATE_URL      "http://c64.idolpx.com/fw/meatloaf64.4MB.bin"
+//#define UPDATE_URL      "http://c64.idolpx.com/fw/meatloaf64.16MB.bin"
 #define DEVICE_DB         "/.sys/devices.db"
 
 #define HOSTNAME		"MeatLoaf64"
