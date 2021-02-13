@@ -93,8 +93,10 @@ void Interface::sendDeviceInfo()
 	// Reset basic memory pointer:
 	uint16_t basicPtr = C64_BASIC_START;
 
+#if defined(ESP8266)
     FSInfo64 fs_info;
     m_fileSystem->info64 ( fs_info );
+#endif 
 
 	char floatBuffer[10]; // buffer
 	dtostrf(getFragmentation(), 3, 2, floatBuffer);
@@ -112,15 +114,15 @@ void Interface::sendDeviceInfo()
 	String sdk = String(ESP.getSdkVersion());
 	sdk.toUpperCase();
 	sendLine(basicPtr, 0, "SDK VER    : %s", sdk.c_str());
-	sendLine(basicPtr, 0, "BOOT VER   : %08X", ESP.getBootVersion());
-	sendLine(basicPtr, 0, "BOOT MODE  : %08X", ESP.getBootMode());
-	sendLine(basicPtr, 0, "CHIP ID    : %08X", ESP.getChipId());
+	//sendLine(basicPtr, 0, "BOOT VER   : %08X", ESP.getBootVersion());
+	//sendLine(basicPtr, 0, "BOOT MODE  : %08X", ESP.getBootMode());
+	//sendLine(basicPtr, 0, "CHIP ID    : %08X", ESP.getChipId());
 	sendLine(basicPtr, 0, "CPU MHZ    : %d MHZ", ESP.getCpuFreqMHz());
 	sendLine(basicPtr, 0, "CYCLES     : %u", ESP.getCycleCount());
 
 	// POWER
 	sendLine(basicPtr, 0, "POWER ---");
-	sendLine(basicPtr, 0, "VOLTAGE    : %d.%d V", ( ESP.getVcc() / 1000 ), ( ESP.getVcc() % 1000 ));
+	//sendLine(basicPtr, 0, "VOLTAGE    : %d.%d V", ( ESP.getVcc() / 1000 ), ( ESP.getVcc() % 1000 ));
 
 	// RAM
 	sendLine(basicPtr, 0, "MEMORY ---");
@@ -136,16 +138,17 @@ void Interface::sendDeviceInfo()
 
 	// FLASH
 	sendLine(basicPtr, 0, "STORAGE ---");
-	sendLine(basicPtr, 0, "FLASH SIZE : %5d B", ESP.getFlashChipRealSize());
+	//sendLine(basicPtr, 0, "FLASH SIZE : %5d B", ESP.getFlashChipRealSize());
 	sendLine(basicPtr, 0, "FLASH SPEED: %d MHZ", ( ESP.getFlashChipSpeed() / 1000000 ));
 
+#if defined(ESP8266)
 	// FILE SYSTEM
 	sendLine(basicPtr, 0, "FILE SYSTEM ---");
 	sendLine(basicPtr, 0, "TYPE       : %s", FS_TYPE);
 	sendLine(basicPtr, 0, "SIZE       : %5d B", fs_info.totalBytes);
 	sendLine(basicPtr, 0, "USED       : %5d B", fs_info.usedBytes);
 	sendLine(basicPtr, 0, "FREE       : %5d B", fs_info.totalBytes - fs_info.usedBytes);
-
+#endif
 	// NETWORK
 	sendLine(basicPtr, 0, "NETWORK ---");
     char ip[16];
@@ -160,7 +163,7 @@ void Interface::sendDeviceInfo()
 	m_iec.send(0);
 	m_iec.sendEOI(0);
 
-	ledON();
+	// ledON();
 } // sendDeviceInfo
 
 void Interface::sendDeviceStatus()
@@ -825,7 +828,7 @@ void Interface::sendListingHTTP()
 	// Connect to HTTP server
 	HTTPClient client;
 	client.setUserAgent( user_agent );
-	client.setFollowRedirects(true);
+	// client.setFollowRedirects(true);
 	client.setTimeout(10000);
 	if (!client.begin(url)) {
 		debugPrintln(F("\r\nConnection failed"));
@@ -908,7 +911,7 @@ void Interface::sendFileHTTP()
 	// Connect to HTTP server
 	HTTPClient client;
 	client.setUserAgent( user_agent );
-	client.setFollowRedirects(true);
+	// client.setFollowRedirects(true);
 	client.setTimeout(10000);
 	if (!client.begin(url)) {
 		debugPrintln(F("\r\nConnection failed"));

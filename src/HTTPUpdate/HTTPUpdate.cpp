@@ -1,3 +1,4 @@
+#if defined(ESP8266)
 
 #include "HTTPUpdate.h"
 
@@ -62,3 +63,5 @@ String HTTPUpdate::getMAC()
 
     return String( result );
 }
+
+#endif

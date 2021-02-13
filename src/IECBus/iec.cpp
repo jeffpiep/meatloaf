@@ -49,7 +49,9 @@ byte ICACHE_RAM_ATTR IEC::timeoutWait(byte waitBit, boolean whileHigh)
 	word t = 0;
 	boolean c;
 	
+#if defined(ESP8266)
 	ESP.wdtFeed();
+#endif	
 	while(t < TIMEOUT) {
 
 		// Check the waiting condition:
@@ -131,7 +133,9 @@ byte ICACHE_RAM_ATTR IEC::receiveByte(void)
 
 	byte data = 0;
 	// Get the bits, sampling on clock rising edge:
+#if defined(ESP8266)
 	ESP.wdtFeed();
+#endif	
 	for(n = 0; n < 8; n++) {
 		data >>= 1;
 		if(timeoutWait(IEC_PIN_CLOCK, false))
@@ -184,7 +188,9 @@ boolean ICACHE_RAM_ATTR IEC::sendByte(byte data, boolean signalEOI)
 	delayMicroseconds(TIMING_NO_EOI);
 
 	// Send bits
+#if defined(ESP8266)
 	ESP.wdtFeed();
+#endif	
 	for(byte n = 0; n < 8; n++) {
 		// FIXME: Here check whether data pin goes low, if so end (enter cleanup)!
 

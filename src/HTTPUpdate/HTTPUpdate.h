@@ -1,4 +1,4 @@
-
+#if defined(ESP8266)
 #include <ESP8266HTTPClient.h>
 #include <ESP8266httpUpdate.h>
 
@@ -11,3 +11,4 @@ public:
     void checkForUpdates();
     String getMAC();
 };
+#endif

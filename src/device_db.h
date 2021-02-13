@@ -2,7 +2,13 @@
 #define DEVICE_DB_H
 
 #include <ArduinoJson.h>
+
+#if defined(ESP32)
+#include "SPIFFS.h"
+#elif defined(ESP8266)
 #include <LittleFS.h>
+#endif
+
 
 #include "global_defines.h"
 

@@ -1,7 +1,13 @@
 // WebDAV server using ESP8266 and SD card filesystem
 // Targeting Windows 7 Explorer WebDav
 
+
+#if defined(ESP32)
+#include <WiFi.h>
+#elif defined(ESP8266)
 #include <ESP8266WiFi.h>
+#endif
+
 #include <SPI.h>
 #include <Hash.h>
 #include <time.h>
@@ -350,7 +356,7 @@ void ESPWebDAV::handleGet(ResourceType resource, bool isGet)	{
 	if(resource != RESOURCE_FILE)
 		return handleNotFound();
 
-	long tStart = millis();
+	// long tStart = millis();
 	uint8_t buf[1460];
 	File rFile = m_fileSystem->open(uri.c_str(), "r");
 
@@ -433,9 +439,11 @@ void ESPWebDAV::handlePut(ResourceType resource)	{
 		if(numRemaining)
 			return handleWriteError(F("Timed out waiting for data"), &nFile);
 
+#if defined(ESP8266)
 		// truncate the file to right length
 		if(!nFile.truncate(contentLen))
 			return handleWriteError(F("Unable to truncate the file"), &nFile);
+#endif
 
 		nFile.close();
 		debugPrint(F("File ")); debugPrint(contentLen - numRemaining); debugPrint(F(" bytes stored in: ")); debugPrint((millis() - tStart)/1000); debugPrintln(F(" sec"));
@@ -549,12 +557,14 @@ int ESPWebDAV::deleteRecursive(String path) {
 		return iCount;
 	}
 
+#if defined(ESP8266)
 	// Otherwise delete its contents first
 	Dir dir = m_fileSystem->openDir(path);
 
 	while (dir.next()) {
 		deleteRecursive(path + '/' + dir.fileName());
 	}
+#endif
 
 	// Then delete the folder itself
 	m_fileSystem->rmdir(path);

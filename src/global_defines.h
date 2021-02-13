@@ -18,22 +18,36 @@
 // ESP8266 GPIO to C64 User Port
 #define TX_PIN          TX      // TX   //64-B+C+7  //64-A+1+N+12=GND, 64-2=+5v, 64-L+6
 #define RX_PIN          RX      // RX   //64-M+5
+#if defined(ESP32)
+#define CTS_PIN         22      // IO5  //64-D      // CTS Clear to Send, connect to host's RTS pin
+#define RTS_PIN         23      // IO4  //64-K      // RTS Request to Send, connect to host's CTS pin
+#define DCD_PIN         25      // IO0  //64-H      // DCD Carrier Status, GPIO0 (programming mode pin)
+#elif defined(ESP8266)
 #define CTS_PIN         D1      // IO5  //64-D      // CTS Clear to Send, connect to host's RTS pin
 #define RTS_PIN         D2      // IO4  //64-K      // RTS Request to Send, connect to host's CTS pin
 #define DCD_PIN         D3      // IO0  //64-H      // DCD Carrier Status, GPIO0 (programming mode pin)
 //#define SWITCH_PIN      D4      // IO2              // Long press to reset to 300KBPS Mode
+#endif
 
 #define RING_INTERVAL   3000    // How often to print RING when having a new incoming connection (ms)
 #define MAX_CMD_LENGTH  256     // Maximum length for AT command
 #define TX_BUF_SIZE     256     // Buffer where to read from serial before writing to TCP
 
-
+#if defined(ESP32)
+// ESP32 GPIO to C64 IEC Serial Port
+#define IEC_PIN_ATN 16   // IO14
+#define IEC_PIN_CLOCK 17 // IO12
+#define IEC_PIN_DATA 18  // IO13
+#define IEC_PIN_SRQ 19   // IO16
+#define IEC_PIN_RESET 21 // IO15
+#elif defined(ESP8266)
 // ESP8266 GPIO to C64 IEC Serial Port
 #define IEC_PIN_ATN     D5      // IO14
 #define IEC_PIN_CLOCK   D6      // IO12
 #define IEC_PIN_DATA    D7      // IO13
 #define IEC_PIN_SRQ     D0      // IO16
 #define IEC_PIN_RESET   D8      // IO15
+#endif
 
 // IEC protocol timing consts:
 #define TIMING_BIT          85  // bit clock hi/lo time     (us)
@@ -57,8 +71,7 @@
 // See timeoutWait
 #define TIMEOUT  65500
 
-
-#define LED_PIN         D4      // IO2
+#define LED_PIN LED_BUILTIN // IO2
 #define LED_ON          LOW
 #define LED_OFF         HIGH
 #define LED_TIME        15      // #ms between toggle
@@ -67,6 +80,7 @@
 #define DEVICE_MASK     0b00000000000000000000111100000000  //  Devices 8-11
 #define IMAGE_TYPES     "D64|D71|D80|D81|D82|D8B|G64|X64|Z64|TAP|T64|TCRT|CRT|D1M|D2M|D4M|DHD|HDD|DNP|DFI|M2I|NIB"
 #define FILE_TYPES      "C64|PRG|P00|SEQ|S00|USR|U00|REL|R00"
+
 
 static void toggleLED(bool now = false)
 {
@@ -114,8 +128,11 @@ static void ledOFF()
 //#define RESET_C64
 
 // Select the FileSystem by uncommenting one of the lines below
-//#define USE_SPIFFS
+#if defined(ESP32)
+#define USE_SPIFFS
+#elif defined(ESP8266)
 #define USE_LITTLEFS
+#endif
 //#define USE_SDFS
 
 // Format storage if a valid file system is not found

@@ -76,9 +76,9 @@ void ESPModem::writeSettings() {
 
   EEPROM.write(BAUD_ADDRESS, serialspeed);
   EEPROM.write(ECHO_ADDRESS, byte(echo));
-  EEPROM.write(AUTO_ANSWER_ADDRESS, byte(autoAnswer));
-  EEPROM.write(SERVER_PORT_ADDRESS, highByte(tcpServerPort));
-  EEPROM.write(SERVER_PORT_ADDRESS + 1, lowByte(tcpServerPort));
+  EEPROM.write(AUTO_ANSWEResult_ADDRESS, byte(autoAnswer));
+  EEPROM.write(SERVEResult_PORT_ADDRESS, highByte(tcpServerPort));
+  EEPROM.write(SERVEResult_PORT_ADDRESS + 1, lowByte(tcpServerPort));
   EEPROM.write(TELNET_ADDRESS, byte(telnet));
   EEPROM.write(VERBOSE_ADDRESS, byte(verboseResults));
   EEPROM.write(PET_TRANSLATE_ADDRESS, byte(petTranslate));
@@ -93,13 +93,13 @@ void ESPModem::writeSettings() {
 
 void ESPModem::readSettings() {
   echo = EEPROM.read(ECHO_ADDRESS);
-  autoAnswer = EEPROM.read(AUTO_ANSWER_ADDRESS);
+  autoAnswer = EEPROM.read(AUTO_ANSWEResult_ADDRESS);
   // serialspeed = EEPROM.read(BAUD_ADDRESS);
 
   ssid = getEEPROM(SSID_ADDRESS, SSID_LEN).c_str();
   password = getEEPROM(PASS_ADDRESS, PASS_LEN).c_str();
   busyMsg = getEEPROM(BUSY_MSG_ADDRESS, BUSY_MSG_LEN).c_str();
-  tcpServerPort = word(EEPROM.read(SERVER_PORT_ADDRESS), EEPROM.read(SERVER_PORT_ADDRESS + 1));
+  tcpServerPort = word(EEPROM.read(SERVEResult_PORT_ADDRESS), EEPROM.read(SERVEResult_PORT_ADDRESS + 1));
   telnet = EEPROM.read(TELNET_ADDRESS);
   verboseResults = EEPROM.read(VERBOSE_ADDRESS);
   petTranslate = EEPROM.read(PET_TRANSLATE_ADDRESS);
@@ -118,12 +118,12 @@ void ESPModem::defaultEEPROM() {
   setEEPROM("", SSID_ADDRESS, SSID_LEN);
   setEEPROM("", PASS_ADDRESS, PASS_LEN);
   setEEPROM("d", IP_TYPE_ADDRESS, 1);
-  EEPROM.write(SERVER_PORT_ADDRESS, highByte(LISTEN_PORT));
-  EEPROM.write(SERVER_PORT_ADDRESS + 1, lowByte(LISTEN_PORT));
+  EEPROM.write(SERVEResult_PORT_ADDRESS, highByte(LISTEN_PORT));
+  EEPROM.write(SERVEResult_PORT_ADDRESS + 1, lowByte(LISTEN_PORT));
 
   EEPROM.write(BAUD_ADDRESS, 0x02); // 2400
   EEPROM.write(ECHO_ADDRESS, 0x01);
-  EEPROM.write(AUTO_ANSWER_ADDRESS, 0x01);
+  EEPROM.write(AUTO_ANSWEResult_ADDRESS, 0x01);
   EEPROM.write(TELNET_ADDRESS, 0x00);
   EEPROM.write(VERBOSE_ADDRESS, 0x01);
   EEPROM.write(PET_TRANSLATE_ADDRESS, 0x00);
@@ -179,10 +179,10 @@ void ESPModem::sendResult(int resultCode) {
     Serial.println(resultCode);
     return;
   }
-  if (resultCode == R_CONNECT) {
-    Serial.print(String(resultCodes[R_CONNECT]) + " " + String(bauds[serialspeed]));
-  } else if (resultCode == R_NOCARRIER) {
-    Serial.print(String(resultCodes[R_NOCARRIER]) + " (" + connectTimeString() + ")");
+  if (resultCode == Result_CONNECT) {
+    Serial.print(String(resultCodes[Result_CONNECT]) + " " + String(bauds[serialspeed]));
+  } else if (resultCode == Result_NOCARRIER) {
+    Serial.print(String(resultCodes[Result_NOCARRIER]) + " (" + connectTimeString() + ")");
   } else {
     Serial.print(String(resultCodes[resultCode]));
   }
@@ -211,7 +211,7 @@ void ESPModem::sendString(String msg) {
 //     serialspeed = 2; // 2400
 //     delay(100);
 //     Serial.begin(bauds[serialspeed]);
-//     sendResult(R_OK);
+//     sendResult(Result_OK);
 //     while (digitalRead(SWITCH_PIN) == LOW) {
 //       delay(50);
 //       digitalWrite(LED_PIN, !digitalRead(LED_PIN));
@@ -228,7 +228,11 @@ void ESPModem::connectWiFi() {
     Serial.println("CONFIGURE SSID AND PASSWORD. TYPE AT? FOR HELP.");
     return;
   }
+#if defined(ESP32)
+  WiFi.begin(ssid.c_str(), password.c_str());
+#elif defined(ESP8266)
   WiFi.begin(ssid, password);
+#endif
   Serial.print("\nCONNECTING TO SSID "); Serial.print(ssid);
   uint8_t i = 0;
   while (WiFi.status() != WL_CONNECTED && i++ < 20) {
@@ -265,7 +269,7 @@ void ESPModem::disconnectWiFi() {
 
 void ESPModem::setBaudRate(int inSpeed) {
   if (inSpeed == 0) {
-    sendResult(R_ERROR);
+    sendResult(Result_ERROR);
     return;
   }
   int foundBaud = -1;
@@ -277,11 +281,11 @@ void ESPModem::setBaudRate(int inSpeed) {
   }
   // requested baud rate not found, return error
   if (foundBaud == -1) {
-    sendResult(R_ERROR);
+    sendResult(Result_ERROR);
     return;
   }
   if (foundBaud == serialspeed) {
-    sendResult(R_OK);
+    sendResult(Result_OK);
     return;
   }
   Serial.print("SWITCHING SERIAL PORT TO ");
@@ -293,7 +297,7 @@ void ESPModem::setBaudRate(int inSpeed) {
   Serial.begin(bauds[foundBaud]);
   serialspeed = foundBaud;
   delay(200);
-  sendResult(R_OK);
+  sendResult(Result_OK);
 }
 
 void ESPModem::setCarrier(byte carrier) {
@@ -409,7 +413,7 @@ void ESPModem::displayStoredSettings() {
   Serial.print("BAUD: "); Serial.println(bauds[EEPROM.read(BAUD_ADDRESS)]); yield();
   Serial.print("SSID: "); Serial.println(getEEPROM(SSID_ADDRESS, SSID_LEN)); yield();
   Serial.print("PASS: "); Serial.println(getEEPROM(PASS_ADDRESS, PASS_LEN)); yield();
-  //Serial.print("SERVER TCP PORT: "); Serial.println(word(EEPROM.read(SERVER_PORT_ADDRESS), EEPROM.read(SERVER_PORT_ADDRESS+1))); yield();
+  //Serial.print("SERVER TCP PORT: "); Serial.println(word(EEPROM.read(SERVEResult_PORT_ADDRESS), EEPROM.read(SERVEResult_PORT_ADDRESS+1))); yield();
   Serial.print("BUSY MSG: "); Serial.println(getEEPROM(BUSY_MSG_ADDRESS, BUSY_MSG_LEN)); yield();
   Serial.print("E"); Serial.print(EEPROM.read(ECHO_ADDRESS)); Serial.print(" "); yield();
   Serial.print("V"); Serial.print(EEPROM.read(VERBOSE_ADDRESS)); Serial.print(" "); yield();
@@ -417,7 +421,7 @@ void ESPModem::displayStoredSettings() {
   Serial.print("&P"); Serial.print(EEPROM.read(PIN_POLARITY_ADDRESS)); Serial.print(" "); yield();
   Serial.print("NET"); Serial.print(EEPROM.read(TELNET_ADDRESS)); Serial.print(" "); yield();
   Serial.print("PET"); Serial.print(EEPROM.read(PET_TRANSLATE_ADDRESS)); Serial.print(" "); yield();
-  Serial.print("S0:"); Serial.print(EEPROM.read(AUTO_ANSWER_ADDRESS)); Serial.print(" "); yield();
+  Serial.print("S0:"); Serial.print(EEPROM.read(AUTO_ANSWEResult_ADDRESS)); Serial.print(" "); yield();
   Serial.println(); yield();
 
   Serial.println("STORED SPEED DIAL:");
@@ -539,7 +543,7 @@ void ESPModem::setup() {
   WiFi.mode(WIFI_STA);
   connectWiFi();
 
-  sendResult(R_OK);
+  sendResult(Result_OK);
   //tcpServer(tcpServerPort); // can't start tcpServer inside a function-- must live outside
 }
 
@@ -553,7 +557,7 @@ void ESPModem::hangUp() {
   tcpClient.stop();
   callConnected = false;
   setCarrier(callConnected);
-  sendResult(R_NOCARRIER);
+  sendResult(Result_NOCARRIER);
   connectTime = 0;
 }
 
@@ -631,7 +635,7 @@ void ESPModem::answerCall() {
   tcpClient = tcpServer.available();
   tcpClient.setNoDelay(true); // try to disable naggle
   //tcpServer.stop();
-  sendResult(R_CONNECT);
+  sendResult(Result_CONNECT);
   connectTime = millis();
   cmdMode = false;
   callConnected = true;
@@ -659,7 +663,7 @@ void ESPModem::handleIncomingConnection() {
   if (autoAnswer == false) {
     if (millis() - lastRingMs > 6000 || lastRingMs == 0) {
       lastRingMs = millis();
-      sendResult(R_RING);
+      sendResult(Result_RING);
       ringCount++;
     }
     return;
@@ -671,7 +675,7 @@ void ESPModem::handleIncomingConnection() {
     tempClient.stop();   // stop the temporary one
     sendString(String("RING ") + ipToString(tcpClient.remoteIP()));
     delay(1000);
-    sendResult(R_CONNECT);
+    sendResult(Result_CONNECT);
     connectTime = millis();
     cmdMode = false;
     tcpClient.flush();
@@ -683,7 +687,7 @@ void ESPModem::handleIncomingConnection() {
 void ESPModem::dialOut(String upCmd) {
   // Can't place a call while in a call
   if (callConnected) {
-    sendResult(R_ERROR);
+    sendResult(Result_ERROR);
     return;
   }
   String host, port;
@@ -722,7 +726,7 @@ void ESPModem::dialOut(String upCmd) {
   if (tcpClient.connect(hostChr, portInt))
   {
     tcpClient.setNoDelay(true); // Try to disable naggle
-    sendResult(R_CONNECT);
+    sendResult(Result_CONNECT);
     connectTime = millis();
     cmdMode = false;
     Serial.flush();
@@ -732,7 +736,7 @@ void ESPModem::dialOut(String upCmd) {
   }
   else
   {
-    sendResult(R_NOANSWER);
+    sendResult(Result_NOANSWER);
     callConnected = false;
     setCarrier(callConnected);
   }
@@ -751,7 +755,7 @@ void ESPModem::command()
   upCmd.toUpperCase();
 
   /**** Just AT ****/
-  if (upCmd == "AT") sendResult(R_OK);
+  if (upCmd == "AT") sendResult(Result_OK);
 
   /**** Dial to host ****/
   else if ((upCmd.indexOf("ATDT") == 0) || (upCmd.indexOf("ATDP") == 0) || (upCmd.indexOf("ATDI") == 0) || (upCmd.indexOf("ATDS") == 0))
@@ -763,17 +767,17 @@ void ESPModem::command()
   else if (upCmd == "ATNET0")
   {
     telnet = false;
-    sendResult(R_OK);
+    sendResult(Result_OK);
   }
   else if (upCmd == "ATNET1")
   {
     telnet = true;
-    sendResult(R_OK);
+    sendResult(Result_OK);
   }
 
   else if (upCmd == "ATNET?") {
     Serial.println(String(telnet));
-    sendResult(R_OK);
+    sendResult(Result_OK);
   }
 
   /**** Answer to incoming connection ****/
@@ -784,43 +788,43 @@ void ESPModem::command()
   /**** Display Help ****/
   else if (upCmd == "AT?" || upCmd == "ATHELP") {
     displayHelp();
-    sendResult(R_OK);
+    sendResult(Result_OK);
   }
 
   /**** Reset, reload settings from EEPROM ****/
   else if (upCmd == "ATZ") {
     readSettings();
-    sendResult(R_OK);
+    sendResult(Result_OK);
   }
 
   /**** Disconnect WiFi ****/
   else if (upCmd == "ATC0") {
     disconnectWiFi();
-    sendResult(R_OK);
+    sendResult(Result_OK);
   }
 
   /**** Connect WiFi ****/
   else if (upCmd == "ATC1") {
     connectWiFi();
-    sendResult(R_OK);
+    sendResult(Result_OK);
   }
 
   /**** Control local echo in command mode ****/
   else if (upCmd.indexOf("ATE") == 0) {
     if (upCmd.substring(3, 4) == "?") {
       sendString(String(echo));
-      sendResult(R_OK);
+      sendResult(Result_OK);
     }
     else if (upCmd.substring(3, 4) == "0") {
       echo = 0;
-      sendResult(R_OK);
+      sendResult(Result_OK);
     }
     else if (upCmd.substring(3, 4) == "1") {
       echo = 1;
-      sendResult(R_OK);
+      sendResult(Result_OK);
     }
     else {
-      sendResult(R_ERROR);
+      sendResult(Result_ERROR);
     }
   }
 
@@ -828,18 +832,18 @@ void ESPModem::command()
   else if (upCmd.indexOf("ATV") == 0) {
     if (upCmd.substring(3, 4) == "?") {
       sendString(String(verboseResults));
-      sendResult(R_OK);
+      sendResult(Result_OK);
     }
     else if (upCmd.substring(3, 4) == "0") {
       verboseResults = 0;
-      sendResult(R_OK);
+      sendResult(Result_OK);
     }
     else if (upCmd.substring(3, 4) == "1") {
       verboseResults = 1;
-      sendResult(R_OK);
+      sendResult(Result_OK);
     }
     else {
-      sendResult(R_ERROR);
+      sendResult(Result_ERROR);
     }
   }
 
@@ -847,20 +851,20 @@ void ESPModem::command()
   else if (upCmd.indexOf("AT&P") == 0) {
     if (upCmd.substring(4, 5) == "?") {
       sendString(String(pinPolarity));
-      sendResult(R_OK);
+      sendResult(Result_OK);
     }
     else if (upCmd.substring(4, 5) == "0") {
       pinPolarity = P_INVERTED;
-      sendResult(R_OK);
+      sendResult(Result_OK);
       setCarrier(callConnected);
     }
     else if (upCmd.substring(4, 5) == "1") {
       pinPolarity = P_NORMAL;
-      sendResult(R_OK);
+      sendResult(Result_OK);
       setCarrier(callConnected);
     }
     else {
-      sendResult(R_ERROR);
+      sendResult(Result_ERROR);
     }
   }
 
@@ -868,22 +872,22 @@ void ESPModem::command()
   else if (upCmd.indexOf("AT&K") == 0) {
     if (upCmd.substring(4, 5) == "?") {
       sendString(String(flowControl));
-      sendResult(R_OK);
+      sendResult(Result_OK);
     }
     else if (upCmd.substring(4, 5) == "0") {
       flowControl = 0;
-      sendResult(R_OK);
+      sendResult(Result_OK);
     }
     else if (upCmd.substring(4, 5) == "1") {
       flowControl = 1;
-      sendResult(R_OK);
+      sendResult(Result_OK);
     }
     else if (upCmd.substring(4, 5) == "2") {
       flowControl = 2;
-      sendResult(R_OK);
+      sendResult(Result_OK);
     }
     else {
-      sendResult(R_ERROR);
+      sendResult(Result_ERROR);
     }
   }
 
@@ -900,19 +904,19 @@ void ESPModem::command()
   /**** Set busy message ****/
   else if (upCmd.indexOf("AT$BM=") == 0) {
     busyMsg = cmd.substring(6);
-    sendResult(R_OK);
+    sendResult(Result_OK);
   }
 
   /**** Display busy message ****/
   else if (upCmd.indexOf("AT$BM?") == 0) {
     sendString(busyMsg);
-    sendResult(R_OK);
+    sendResult(Result_OK);
   }
 
   /**** Display Network settings ****/
   else if (upCmd == "ATI") {
     displayNetworkStatus();
-    sendResult(R_OK);
+    sendResult(Result_OK);
   }
 
   /**** Display profile settings ****/
@@ -920,13 +924,13 @@ void ESPModem::command()
     displayCurrentSettings();
     waitForSpace();
     displayStoredSettings();
-    sendResult(R_OK);
+    sendResult(Result_OK);
   }
 
   /**** Save (write) current settings to EEPROM ****/
   else if (upCmd == "AT&W") {
     writeSettings();
-    sendResult(R_OK);
+    sendResult(Result_OK);
   }
 
   /**** Set or display a speed dial number ****/
@@ -936,94 +940,94 @@ void ESPModem::command()
       if (upCmd.substring(5, 6) == "=") {
         String speedDial = cmd;
         storeSpeedDial(speedNum, speedDial.substring(6));
-        sendResult(R_OK);
+        sendResult(Result_OK);
       }
       if (upCmd.substring(5, 6) == "?") {
         sendString(speedDials[speedNum]);
-        sendResult(R_OK);
+        sendResult(Result_OK);
       }
     } else {
-      sendResult(R_ERROR);
+      sendResult(Result_ERROR);
     }
   }
 
   /**** Set WiFi SSID ****/
   else if (upCmd.indexOf("AT$SSID=") == 0) {
     ssid = cmd.substring(8);
-    sendResult(R_OK);
+    sendResult(Result_OK);
   }
 
   /**** Display WiFi SSID ****/
   else if (upCmd == "AT$SSID?") {
     sendString(ssid);
-    sendResult(R_OK);
+    sendResult(Result_OK);
   }
 
   /**** Set WiFi Password ****/
   else if (upCmd.indexOf("AT$PASS=") == 0) {
     password = cmd.substring(8);
-    sendResult(R_OK);
+    sendResult(Result_OK);
   }
 
   /**** Display WiFi Password ****/
   else if (upCmd == "AT$PASS?") {
     sendString(password);
-    sendResult(R_OK);
+    sendResult(Result_OK);
   }
 
   /**** Reset EEPROM and current settings to factory defaults ****/
   else if (upCmd == "AT&F") {
     defaultEEPROM();
     readSettings();
-    sendResult(R_OK);
+    sendResult(Result_OK);
   }
 
   /**** Set auto answer off ****/
   else if (upCmd == "ATS0=0") {
     autoAnswer = false;
-    sendResult(R_OK);
+    sendResult(Result_OK);
   }
 
   /**** Set auto answer on ****/
   else if (upCmd == "ATS0=1") {
     autoAnswer = true;
-    sendResult(R_OK);
+    sendResult(Result_OK);
   }
 
   /**** Display auto answer setting ****/
   else if (upCmd == "ATS0?") {
     sendString(String(autoAnswer));
-    sendResult(R_OK);
+    sendResult(Result_OK);
   }
 
   /**** Set PET MCTerm Translate On ****/
   else if (upCmd == "ATPET=1") {
     petTranslate = true;
-    sendResult(R_OK);
+    sendResult(Result_OK);
   }
 
   /**** Set PET MCTerm Translate Off ****/
   else if (upCmd == "ATPET=0") {
     petTranslate = false;
-    sendResult(R_OK);
+    sendResult(Result_OK);
   }
 
   /**** Display PET MCTerm Translate Setting ****/
   else if (upCmd == "ATPET?") {
     sendString(String(petTranslate));
-    sendResult(R_OK);
+    sendResult(Result_OK);
   }
 
   /**** Set HEX Translate On ****/
   else if (upCmd == "ATHEX=1") {
     hex = true;
-    sendResult(R_OK);
+    sendResult(Result_OK);
   }
 
   /**** Set HEX Translate Off ****/
   else if (upCmd == "ATHEX=0") {
     hex = false;
-    sendResult(R_OK);
+    sendResult(Result_OK);
   }
 
   /**** Hang up a call ****/
@@ -1033,19 +1037,23 @@ void ESPModem::command()
 
   /**** Hang up a call ****/
   else if (upCmd.indexOf("AT$RB") == 0) {
-    sendResult(R_OK);
+    sendResult(Result_OK);
     Serial.flush();
     delay(500);
+#if defined(ESP32)
+    ESP.restart();
+#elif defined(ESP8266)
     ESP.reset();
+#endif
   }
 
   /**** Exit modem command mode, go online ****/
   else if (upCmd == "ATO") {
     if (callConnected == 1) {
-      sendResult(R_CONNECT);
+      sendResult(Result_CONNECT);
       cmdMode = false;
     } else {
-      sendResult(R_ERROR);
+      sendResult(Result_ERROR);
     }
   }
 
@@ -1053,22 +1061,23 @@ void ESPModem::command()
   else if (upCmd.indexOf("AT$SP=") == 0) {
     tcpServerPort = upCmd.substring(6).toInt();
     sendString("CHANGES REQUIRES NV SAVE (AT&W) AND RESTART");
-    sendResult(R_OK);
+    sendResult(Result_OK);
   }
 
   /**** Display icoming TCP server port ****/
   else if (upCmd == "AT$SP?") {
     sendString(String(tcpServerPort));
-    sendResult(R_OK);
+    sendResult(Result_OK);
   }
 
   /**** See my IP address ****/
   else if (upCmd == "ATIP?")
   {
     Serial.println(WiFi.localIP());
-    sendResult(R_OK);
+    sendResult(Result_OK);
   }
 
+#if defined(ESP8266)
   /**** Connect to WiFi via WPS ****/
   else if (upCmd == "ATWPS")
   {
@@ -1084,6 +1093,7 @@ void ESPModem::command()
   {
     updateFirmware();
   }
+#endif
 
   /**** HTTP GET request ****/
   else if (upCmd.indexOf("ATGET") == 0)
@@ -1116,14 +1126,14 @@ void ESPModem::command()
     // Establish connection
     if (!tcpClient.connect(hostChr, port))
     {
-      sendResult(R_NOCARRIER);
+      sendResult(Result_NOCARRIER);
       connectTime = 0;
       callConnected = false;
       setCarrier(callConnected);
     }
     else
     {
-      sendResult(R_CONNECT);
+      sendResult(Result_CONNECT);
       connectTime = millis();
       cmdMode = false;
       callConnected = true;
@@ -1141,7 +1151,7 @@ void ESPModem::command()
   }
 
   /**** Unknown command ****/
-  else sendResult(R_ERROR);
+  else sendResult(Result_ERROR);
 
   cmd = "";
 }
@@ -1355,7 +1365,7 @@ void ESPModem::loop()
     {
       //tcpClient.stop();
       cmdMode = true;
-      sendResult(R_OK);
+      sendResult(Result_OK);
       plusCount = 0;
     }
   }
@@ -1364,7 +1374,7 @@ void ESPModem::loop()
   if ((!tcpClient.connected()) && (cmdMode == false) && callConnected == true)
   {
     cmdMode = true;
-    sendResult(R_NOCARRIER);
+    sendResult(Result_NOCARRIER);
     connectTime = 0;
     callConnected = false;
     setCarrier(callConnected);
@@ -1375,7 +1385,7 @@ void ESPModem::loop()
   if (millis() - ledTime > LED_TIME) digitalWrite(LED_PIN, !digitalRead(LED_PIN)); // toggle LED state
 }
 
-
+#if defined(ESP8266)
 bool ESPModem::startWPSConnect() {
   Serial.println("WPS config start");
   bool wpsSuccess = WiFi.beginWPSConfig();
@@ -1391,9 +1401,10 @@ bool ESPModem::startWPSConnect() {
   }
   return wpsSuccess; 
 }
+#endif
 
 
-
+#if defined(ESP8266)
 bool updateFirmware() {
   Serial.println("Attempting to bake Meat Loaf 64!\r\n");
   ESPhttpUpdate.setLedPin(LED_BUILTIN, LOW);
@@ -1419,3 +1430,4 @@ void updateProgress(int cur, int total) {
 void updateEnd() {
   Serial.printf("Update Complete! Restarting!\r\n\r\n");
 }
+#endif
