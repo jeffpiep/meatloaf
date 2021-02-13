@@ -4,9 +4,15 @@
 		or Map Network Drive -> Connect to a Website
 */
 
+#include <ArduinoJson.h>
+
+#if defined(ESP32)
+#include <WiFi.h>
+#include <ESPmDNS.h>
+#elif defined(ESP8266)
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
-#include <ArduinoJson.h>
+#endif
 
 #include "global_defines.h"
 #include "fs_config.h"
@@ -41,7 +47,9 @@ static Interface drive(iec, fileSystem);
 //Zimodem modem;
 ESPModem modem;
 
+#if defined(ESP8266)
 ADC_MODE ( ADC_VCC );	// Set ADC for Voltage Monitoring
+#endif
 
 // enum class statemachine
 // {
@@ -53,8 +61,9 @@ ADC_MODE ( ADC_VCC );	// Set ADC for Voltage Monitoring
 //String state_string;
 
 // ------------------------
-void setup() {
-// ------------------------
+void setup()
+{
+	// ------------------------
 	// WiFi.mode(WIFI_STA);
 	// WiFi.setPhyMode(WIFI_PHY_MODE_11N);
 	// WiFi.hostname(HOSTNAME);
@@ -80,13 +89,15 @@ void setup() {
 //	modem.fileSystem = fileSystem;
 	modem.setup();
 
+#if defined(ESP8266)
 	// initialize selected file system
 	fileSystemConfig.setAutoFormat(AUTO_FORMAT);
 #if defined USE_SDFS	
 	fileSystemConfig.setCSPin(CHIP_SELECT_PIN);
 	fileSystemConfig.setSPI(SPI_SETTINGS);
 #endif
-	fileSystem->setConfig(fileSystemConfig);	
+	fileSystem->setConfig(fileSystemConfig);
+#endif
 
 	if(!fileSystem->begin())		
 	{	
@@ -205,8 +216,6 @@ void setup() {
 	ledON();
 	Serial.println(F("READY."));
 }
-
-
 
 // ------------------------
 void loop() {
