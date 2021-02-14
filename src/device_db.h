@@ -1,10 +1,14 @@
 #ifndef DEVICE_DB_H
 #define DEVICE_DB_H
 
-#include <ArduinoJson.h>
-#include <LittleFS.h>
-
 #include "global_defines.h"
+#include <ArduinoJson.h>
+
+#if defined(USE_SPIFFS)
+#include <FS.h>
+#elif defined(USE_LITTLEFS)
+#include <LittleFS.h>
+#endif
 
 #define RECORD_SIZE 256
 

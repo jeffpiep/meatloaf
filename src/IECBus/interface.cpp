@@ -93,9 +93,10 @@ void Interface::sendDeviceInfo()
 	// Reset basic memory pointer:
 	uint16_t basicPtr = C64_BASIC_START;
 
+#if defined(USE_LITTEFS)
     FSInfo64 fs_info;
     m_fileSystem->info64 ( fs_info );
-
+#endif
 	char floatBuffer[10]; // buffer
 	dtostrf(getFragmentation(), 3, 2, floatBuffer);
 
@@ -142,9 +143,11 @@ void Interface::sendDeviceInfo()
 	// FILE SYSTEM
 	sendLine(basicPtr, 0, "FILE SYSTEM ---");
 	sendLine(basicPtr, 0, "TYPE       : %s", FS_TYPE);
+#if defined(USE_LITTEFS)
 	sendLine(basicPtr, 0, "SIZE       : %5d B", fs_info.totalBytes);
 	sendLine(basicPtr, 0, "USED       : %5d B", fs_info.usedBytes);
 	sendLine(basicPtr, 0, "FREE       : %5d B", fs_info.totalBytes - fs_info.usedBytes);
+#endif
 
 	// NETWORK
 	sendLine(basicPtr, 0, "NETWORK ---");
@@ -682,9 +685,13 @@ void Interface::sendListing()
 uint16_t Interface::sendFooter(uint16_t &basicPtr)
 {
 	// Send List FOOTER
+#if defined(USE_LITTEFS)
 	FSInfo64 fs_info;
     m_fileSystem->info64(fs_info);
 	return sendLine(basicPtr, (fs_info.totalBytes-fs_info.usedBytes)/256, "BLOCKS FREE.");
+#elif defined(USE_SPIFFS)
+	return sendLine(basicPtr, 00, "UNKNOWN BLOCKS FREE.");
+#endif
 	//debugPrintln("");
 }
 

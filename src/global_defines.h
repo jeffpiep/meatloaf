@@ -114,8 +114,8 @@ static void ledOFF()
 //#define RESET_C64
 
 // Select the FileSystem by uncommenting one of the lines below
-//#define USE_SPIFFS
-#define USE_LITTLEFS
+#define USE_SPIFFS
+//#define USE_LITTLEFS
 //#define USE_SDFS
 
 // Format storage if a valid file system is not found
