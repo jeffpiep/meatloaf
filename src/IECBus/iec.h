@@ -161,12 +161,10 @@ private:
 		writePIN(IEC_PIN_DATA, state);
 	}
 
-#if defined(ESP8266)
 	inline void ICACHE_RAM_ATTR writeSRQ(boolean state)
 	{
 		writePIN(IEC_PIN_SRQ, state);
 	}
-#endif
 
 	// communication must be reset
 	byte m_state;
