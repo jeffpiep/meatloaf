@@ -140,7 +140,7 @@ void Interface::sendDeviceInfo()
 	// FILE SYSTEM
 	sendLine(basicPtr, 0, "FILE SYSTEM ---");
 	sendLine(basicPtr, 0, "TYPE       : %s", FS_TYPE);
-#if defined(USE_LITTEFS)
+#elif defined(USE_LITTEFS)
 	sendLine(basicPtr, 0, "SIZE       : %5d B", fs_info.totalBytes);
 	sendLine(basicPtr, 0, "USED       : %5d B", fs_info.usedBytes);
 	sendLine(basicPtr, 0, "FREE       : %5d B", fs_info.totalBytes - fs_info.usedBytes);

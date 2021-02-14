@@ -356,7 +356,7 @@ void ESPWebDAV::handleGet(ResourceType resource, bool isGet)	{
 	if(resource != RESOURCE_FILE)
 		return handleNotFound();
 
-	// long tStart = millis();
+	long tStart = millis(); // used in debugPrint below
 	uint8_t buf[1460];
 	File rFile = m_fileSystem->open(uri.c_str(), "r");
 
