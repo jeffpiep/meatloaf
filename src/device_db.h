@@ -1,23 +1,22 @@
 #ifndef DEVICE_DB_H
 #define DEVICE_DB_H
 
+#include "global_defines.h"
 #include <ArduinoJson.h>
 
-#if defined(ESP32)
-#include "SPIFFS.h"
-#elif defined(ESP8266)
+#if defined(USE_SPIFFS)
+#include <FS.h>
+#elif defined(USE_LITTLEFS)
 #include <LittleFS.h>
 #endif
 
-
-#include "global_defines.h"
-
 #define RECORD_SIZE 256
 
-class DeviceDB {
+class DeviceDB
+{
 public:
-	DeviceDB(FS* fileSystem);
-	~DeviceDB();
+    DeviceDB(FS *fileSystem);
+    ~DeviceDB();
 
     bool init(String database);
     bool check();
@@ -41,7 +40,7 @@ public:
 
 private:
     bool m_dirty;
-    FS* m_fileSystem;
+    FS *m_fileSystem;
     StaticJsonDocument<256> m_device;
 };
 

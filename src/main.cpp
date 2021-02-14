@@ -68,7 +68,7 @@ void setup()
 	// WiFi.setPhyMode(WIFI_PHY_MODE_11N);
 	// WiFi.hostname(HOSTNAME);
 	delay(1000);
-	Serial.begin(9600);
+	Serial.begin(115200); // for debug
 	// WiFi.begin(ssid, password);
 	// Serial.println("");
 

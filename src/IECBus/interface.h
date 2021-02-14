@@ -4,13 +4,17 @@
 #if defined(ESP32)
 #include <WiFi.h>
 #include <HTTPClient.h>
-#include <SPIFFS.h>
 #elif defined(ESP8266)
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
-#include <LittleFS.h>
 #endif
 
+#if defined(USE_SPIFFS)
+#include <SPIFFS.h> // maybe only need FS.h for ESP32, too
+#include <FS.h>
+#elif defined(USE_LITTLEFS)
+#include <LittleFS.h>
+#endif
 
 #include "global_defines.h"
 #include "MemoryInfo.h"
@@ -19,7 +23,6 @@
 #include "Petscii.h"
 #include "device_db.h"
 #include "helpers.h"
-
 
 // enum  fsType {
 // 	IS_FAIL = 0xFF, 	// IFail: SD card or fat not ok
@@ -30,14 +33,14 @@
 // 	IS_PRG = 4,
 // };
 
-
-enum OpenState {
-	O_NOTHING,			// Nothing to send / File not found error
-	O_INFO,				// User issued a reload sd card
-	O_FILE,				// A program file is opened
-	O_DIR,				// A listing is requested
-	O_FILE_ERR,			// Incorrect file format opened
-	O_SAVE_REPLACE,		// Save-with-replace is requested
+enum OpenState
+{
+	O_NOTHING,		// Nothing to send / File not found error
+	O_INFO,			// User issued a reload sd card
+	O_FILE,			// A program file is opened
+	O_DIR,			// A listing is requested
+	O_FILE_ERR,		// Incorrect file format opened
+	O_SAVE_REPLACE, // Save-with-replace is requested
 	O_DEVICE_INFO,
 	O_DEVICE_STATUS
 };
@@ -48,7 +51,7 @@ enum OpenState {
 class Interface
 {
 public:
-	Interface(IEC& iec, FS* fileSystem);
+	Interface(IEC &iec, FS *fileSystem);
 	virtual ~Interface() {}
 
 	bool begin();
@@ -63,7 +66,7 @@ public:
 	// retrieve the date and time as strings. Current time will be updated according to the elapsed millis before formatting.
 	// String will be of format "yyyymmdd hhmmss", if timeOnly is true only the time part will be returned as
 	// "hhmmss", this fits the TIME$ variable of cbm basic 2.0 and later.
-	char* dateTimeString(char* dest, bool timeOnly);
+	char *dateTimeString(char *dest, bool timeOnly);
 
 private:
 	void reset(void);
@@ -75,8 +78,8 @@ private:
 	void sendListing(void);
 	void sendListingHTTP(void);
 	uint16_t sendHeader(uint16_t &basicPtr);
-	uint16_t sendLine(uint16_t &basicPtr, uint16_t blocks, char* text);
-	uint16_t sendLine(uint16_t &basicPtr, uint16_t blocks, const char* format, ...);
+	uint16_t sendLine(uint16_t &basicPtr, uint16_t blocks, char *text);
+	uint16_t sendLine(uint16_t &basicPtr, uint16_t blocks, const char *format, ...);
 	uint16_t sendFooter(uint16_t &basicPtr);
 	void sendFile(void);
 	void sendFileHTTP(void);
@@ -92,18 +95,15 @@ private:
 	void handleDeviceCommand(IEC::ATNCmd &cmd);
 	void handleMeatLoafCommand(IEC::ATNCmd &cmd);
 
-
 	// our iec low level driver:
-	IEC& m_iec;
+	IEC &m_iec;
 
 	// This var is set after an open command and determines what to send next
-	byte m_openState;			// see OpenState
+	byte m_openState; // see OpenState
 	byte m_queuedError;
 
-
-
 	// atn command buffer struct
-	IEC::ATNCmd& m_atn_cmd;
+	IEC::ATNCmd &m_atn_cmd;
 
 	FS *m_fileSystem;
 	StaticJsonDocument<256> m_jsonHTTP;
