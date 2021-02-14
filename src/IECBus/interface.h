@@ -3,7 +3,11 @@
 
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
+#if defined(USE_SPIFFS)
+#include <FS.h>
+#elif defined(USE_LITTLEFS)
 #include <LittleFS.h>
+#endif
 
 #include "global_defines.h"
 #include "MemoryInfo.h"
