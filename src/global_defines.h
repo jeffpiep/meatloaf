@@ -91,7 +91,7 @@ static void ledOFF()
 
 
 // Enable this for verbose logging of IEC and CBM interfaces.
-//#define DEBUG
+#define DEBUG
 
 #ifdef DEBUG
     #define debugPrint(...) Serial.print(__VA_ARGS__)
