@@ -1632,14 +1632,13 @@ void Interface::sendListing()
     //sendLine(1, "\"THIS IS A FILE\"     PRG", basicPtr);
     //sendLine(5, "\"THIS IS A FILE 2\"   PRG", basicPtr);
 
-#if defined(ESP8266)
-    Dir dir = m_fileSystem->openDir(m_device.path());
-#elif defined(ESP32)
     File dir = m_fileSystem->open(m_device.path());
-#endif
-    while (dir.next())
+	File file = dir.openNextFile();
+
+    while (file)
     {
-        uint16_t block_cnt = dir.fileSize() / 256;
+		String fname = file.name();
+		uint16_t block_cnt = file.size() / 256;
         byte block_spc = 3;
         if (block_cnt > 9)
             block_spc--;
@@ -1648,18 +1647,18 @@ void Interface::sendListing()
         if (block_cnt > 999)
             block_spc--;
 
-        byte space_cnt = 21 - (dir.fileName().length() + 5);
+        byte space_cnt = 21 - (fname.length() + 5);
         if (space_cnt > 21)
             space_cnt = 0;
 
-        if (dir.fileSize())
+        if (file.size())
         {
-            block_cnt = dir.fileSize() / 256;
+            block_cnt = file.size() / 256;
 
-            uint8_t ext_pos = dir.fileName().lastIndexOf(".") + 1;
-            if (ext_pos && ext_pos != dir.fileName().length())
+            uint8_t ext_pos = fname.lastIndexOf(".") + 1;
+            if (ext_pos && ext_pos != fname.length())
             {
-                extension = dir.fileName().substring(ext_pos);
+                extension = fname.substring(ext_pos);
                 extension.toUpperCase();
             }
             else
@@ -1673,14 +1672,15 @@ void Interface::sendListing()
         }
 
         // Don't show hidden folders or files
-        if (!dir.fileName().startsWith("."))
+        if (!fname.startsWith("."))
         {
-            byte_count += sendLine(basicPtr, block_cnt, "%*s\"%s\"%*s %3s", block_spc, "", dir.fileName().c_str(), space_cnt, "", extension.c_str());
+            byte_count += sendLine(basicPtr, block_cnt, "%*s\"%s\"%*s %3s", block_spc, "", file.name(), space_cnt, "", extension.c_str());
         }
 
         //debugPrintf(" (%d, %d)\r\n", space_cnt, byte_count);
         toggleLED(true);
-    }
+		file = dir.openNextFile();
+	}
 
     byte_count += sendFooter(basicPtr);
 
@@ -1728,19 +1728,16 @@ void Interface::sendFile()
         }
         else
         {
-
-#if defined(ESP8266)
-            Dir dir = m_fileSystem->openDir(m_device.path());
-#elif defined(ESP32)
             File dir = m_fileSystem->open(m_device.path());
-#endif
+			File file = dir.openNextFile();
 
-            while (dir.next() && dir.isDirectory())
+			while (file && file.isDirectory())
             {
-                debugPrintf("\r\nsendFile: %s", dir.fileName().c_str());
-            }
-            if (dir.isFile())
-                m_filename = dir.fileName();
+                debugPrintf("\r\nsendFile: %s", file.name());
+				file = dir.openNextFile();
+			}
+            // if (dir.isFile())
+			m_filename = file.name();
         }
     }
     String inFile = String(m_device.path() + m_filename);

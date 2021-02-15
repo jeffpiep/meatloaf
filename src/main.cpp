@@ -19,11 +19,7 @@
 //#include "SerialCommand.h"
 
 #include "IECBus/iec.h"
-#if defined(ESP8266)
 #include "IECBus/interface.h"
-#elif defined(ESP32)
-#include "IECBus/interface32.h"
-#endif
 #include "ESPModem/ESPModem.h"
 #include "ESPWebDAV/ESPWebDAV.h"
 
