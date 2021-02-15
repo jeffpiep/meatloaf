@@ -125,8 +125,8 @@ static void ledOFF()
 // Define this to reset the commodore 64 when the esp2iec is reset
 //#define RESET_C64
 
-// Select the FileSystem by uncommenting one of the lines below
-#define USE_SPIFFS
+// Select the FileSystem in PLATFORMIO.INI file
+//#define USE_SPIFFS
 //#define USE_LITTLEFS
 //#define USE_SDFS
 
