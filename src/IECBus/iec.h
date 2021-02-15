@@ -93,27 +93,27 @@ public:
 
 	IECState state() const;
 
-	boolean readATN()
+	inline boolean readATN()
 	{
 		return readPIN(IEC_PIN_ATN);
 	}
 
-	boolean readCLOCK()
+	inline boolean readCLOCK()
 	{
 		return readPIN(IEC_PIN_CLOCK);
 	}
 
-	boolean readDATA()
+	inline boolean readDATA()
 	{
 		return readPIN(IEC_PIN_DATA);
 	}
 
-	boolean readSRQ()
+	inline boolean readSRQ()
 	{
 		return readPIN(IEC_PIN_SRQ);
 	}
 
-	boolean readRESET()
+	inline boolean readRESET()
 	{
 		return readPIN(IEC_PIN_RESET);
 	}
@@ -149,22 +149,22 @@ private:
 		digitalWrite(pinNumber, state ? LOW : HIGH);
 	}
 
-	void writeATN(boolean state)
+	inline void writeATN(boolean state)
 	{
 		writePIN(IEC_PIN_ATN, state);
 	}
 
-	void writeCLOCK(boolean state)
+	inline void writeCLOCK(boolean state)
 	{
 		writePIN(IEC_PIN_CLOCK, state);
 	}
 
-	void writeDATA(boolean state)
+	inline void writeDATA(boolean state)
 	{
 		writePIN(IEC_PIN_DATA, state);
 	}
 
-	void writeSRQ(boolean state)
+	inline void writeSRQ(boolean state)
 	{
 		writePIN(IEC_PIN_SRQ, state);
 	}
