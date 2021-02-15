@@ -32,29 +32,6 @@
 //#include "debug.h"
 #include "interface.h"
 
-bool fsCompat::next(Dir f)
-{
-	bool result = false;
-#if defined(ESP8266)
-	result = f.next();
-#elif defined(ESP32)
-	result = f.openNextFile("r");
-#endif
-	return result;
-}
-
-size_t fsCompat::size(Dir f)
-{
-	size_t result = -1;
-#if defined(ESP8266)
-	result = f.fileSize();
-#elif defined(ESP32)
-	result = f.size());
-#endif
-	return result;
-}
-
-
 using namespace CBM;
 
 namespace
@@ -663,9 +640,9 @@ void Interface::sendListing()
 #elif defined(ESP32)
 	File dir = m_fileSystem->open(m_device.path());
 #endif
-	while (fsCompat::next(dir)) // dir.next())
+	while (dir.next())
 	{
-		uint16_t block_cnt = fsCompat::size(dir) / 256;
+		uint16_t block_cnt = dir.fileSize() / 256;
 		byte block_spc = 3;
 		if (block_cnt > 9)
 			block_spc--;
