@@ -32,6 +32,10 @@
 // 	IS_PRG = 4,
 // };
 
+#if defined(ESP32)
+typedef File Dir;
+#endif
+
 enum OpenState
 {
 	O_NOTHING,		// Nothing to send / File not found error
@@ -112,6 +116,13 @@ private:
 	DeviceDB m_device;
 	String m_filename;
 	String m_filetype;
+};
+
+class fsCompat
+{
+	public:
+		static bool next(Dir);
+		static size_t size(Dir);
 };
 
 #endif
