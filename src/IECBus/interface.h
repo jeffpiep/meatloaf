@@ -10,7 +10,6 @@
 #endif
 
 #if defined(USE_SPIFFS)
-// #include <SPIFFS.h> // maybe only need FS.h for ESP32, too
 #include <FS.h>
 #elif defined(USE_LITTLEFS)
 #include <LittleFS.h>

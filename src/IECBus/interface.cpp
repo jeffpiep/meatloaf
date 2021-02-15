@@ -289,7 +289,11 @@ void Interface::handleATNCmdCodeOpen(IEC::ATNCmd &atn_cmd)
 	if (m_filetype.length() > 4 || m_filetype.length() == m_filename.length())
 		m_filetype = "";
 
+#if defined(ESP8266)
 	Dir local_file = m_fileSystem->openDir(String(m_device.path() + m_filename));
+#elif defined(ESP32)
+	File local_file = m_fileSystem->open(String(m_device.path() + m_filename));
+#endif
 
 	//Serial.printf("\r\n$IEC: DEVICE[%d] DRIVE[%d] PARTITION[%d] URL[%s] PATH[%s] IMAGE[%s] FILENAME[%s] FILETYPE[%s] COMMAND[%s]\r\n", m_device.device(), m_device.drive(), m_device.partition(), m_device.url().c_str(), m_device.path().c_str(), m_device.image().c_str(), m_filename.c_str(), m_filetype.c_str(), atn_cmd.str);
 	if (m_filename.startsWith(F("$")))
@@ -630,7 +634,12 @@ void Interface::sendListing()
 	// Send List ITEMS
 	//sendLine(1, "\"THIS IS A FILE\"     PRG", basicPtr);
 	//sendLine(5, "\"THIS IS A FILE 2\"   PRG", basicPtr);
+
+#if defined(ESP8266)
 	Dir dir = m_fileSystem->openDir(m_device.path());
+#elif defined(ESP32)
+	File dir = m_fileSystem->open(m_device.path());
+#endif
 	while (dir.next())
 	{
 		uint16_t block_cnt = dir.fileSize() / 256;
@@ -722,7 +731,13 @@ void Interface::sendFile()
 		}
 		else
 		{
+
+#if defined(ESP8266)
 			Dir dir = m_fileSystem->openDir(m_device.path());
+#elif defined(ESP32)
+			File dir = m_fileSystem->open(m_device.path());
+#endif
+
 			while (dir.next() && dir.isDirectory())
 			{
 				debugPrintf("\r\nsendFile: %s", dir.fileName().c_str());
