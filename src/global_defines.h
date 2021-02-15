@@ -92,18 +92,18 @@ static void toggleLED(bool now = false)
     }
 }
 
-static void ledON()
+inline static void ledON()
 {
     digitalWrite(LED_PIN, LED_ON);
 }
 
-static void ledOFF()
+inline static void ledOFF()
 {
     digitalWrite(LED_PIN, LED_OFF);
 }
 
 // Enable this for verbose logging of IEC and CBM interfaces.
-#define DEBUG
+// #define DEBUG // define in platformio.ini
 
 #ifdef DEBUG
 #define debugPrint(...) Serial.print(__VA_ARGS__)

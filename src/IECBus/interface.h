@@ -53,7 +53,7 @@ public:
 	bool begin();
 
 	// The handler returns the current IEC state, see the iec.hpp for possible states.
-	byte ICACHE_RAM_ATTR loop(void);
+	byte loop(void);
 
 	// Keeping the system date and time as set on a specific moment. The millis() will then keep the elapsed time since
 	// moment the time was set.
@@ -83,7 +83,7 @@ private:
 	void saveFile(void);
 
 	// handler helpers.
-	void ICACHE_RAM_ATTR handleATNCmdCodeOpen(IEC::ATNCmd &cmd);
+	void handleATNCmdCodeOpen(IEC::ATNCmd &cmd);
 	void handleATNCmdCodeDataListen(void);
 	void handleATNCmdCodeDataTalk(byte chan);
 	void handleATNCmdClose(void);
@@ -163,7 +163,7 @@ public:
 	bool begin();
 
 	// The handler returns the current IEC state, see the iec.hpp for possible states.
-	byte ICACHE_RAM_ATTR loop(void);
+	byte loop(void);
 
 	// Keeping the system date and time as set on a specific moment. The millis() will then keep the elapsed time since
 	// moment the time was set.
@@ -193,7 +193,7 @@ private:
 	void saveFile(void);
 
 	// handler helpers.
-	void ICACHE_RAM_ATTR handleATNCmdCodeOpen(IEC::ATNCmd &cmd);
+	void handleATNCmdCodeOpen(IEC::ATNCmd &cmd);
 	void handleATNCmdCodeDataListen(void);
 	void handleATNCmdCodeDataTalk(byte chan);
 	void handleATNCmdClose(void);
