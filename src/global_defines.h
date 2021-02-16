@@ -50,7 +50,7 @@
 #endif
 
 // IEC protocol timing consts:
-#define TIMING_BIT 85          // bit clock hi/lo time     (us)
+#define TIMING_BIT 60          // bit clock hi/lo time     (us)
 #define TIMING_NO_EOI 20       // delay before bits        (us)
 #define TIMING_EOI_WAIT 200    // delay to signal EOI      (us)
 #define TIMING_EOI_THRESH 20   // threshold for EOI detect (*10 us approx)

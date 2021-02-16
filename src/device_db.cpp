@@ -53,12 +53,9 @@ bool DeviceDB::init(String db_file)
 #endif
             for(byte i = 0; i < 31; i++) // 22 devices x 2 drives = 44 records x 256 bytes = 11264 total bytes
             {
-                if(!select(i))
-                {
-                    sprintf( (char *)buffer, "{\"device\":%d,\"drive\":0,\"partition\":0,\"url\":\"\",\"path\":\"/\",\"image\":\"\"}", i );
-                    f_database.write(buffer, RECORD_SIZE);
-                    Serial.printf("Writing Record %d: %s\r\n", i, buffer);                    
-                }
+                sprintf( (char *)buffer, "{\"device\":%d,\"drive\":0,\"partition\":0,\"url\":\"\",\"path\":\"/\",\"image\":\"\"}", i );
+                f_database.write(buffer, RECORD_SIZE);
+                Serial.printf("Writing Record %d: %s\r\n", i, buffer);                    
             }
             Serial.printf("Database created!\r\n");
         }
