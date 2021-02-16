@@ -326,60 +326,7 @@ IEC::ATNCheck ICACHE_RAM_ATTR IEC::checkATN(ATNCmd& atn_cmd)
 
 		if ( cc == ATN_CODE_LISTEN && isDeviceEnabled(atn_cmd.device) )
 		{
-			// Okay, we will listen.
-			debugPrintf("(20 LISTEN) (%.2d DEVICE)", atn_cmd.device);
-
-			// If the command is DATA and it is not to expect just a small command on the command channel, then
-			// we're into something more heavy. Otherwise read it all out right here until UNLISTEN is received.
-			if((c bitand 0xF0) == ATN_CODE_DATA and (c bitand 0x0F) not_eq CMD_CHANNEL) 
-			{
-				// A heapload of data might come now, too big for this context to handle so the caller handles this, we're done here.
-				debugPrintf("\r\ncheckATN: %.2X (DATA)      (%.2X COMMAND) (%.2X CHANNEL)", atn_cmd.code, atn_cmd.command, atn_cmd.channel);
-				ret = ATN_CMD_LISTEN;
-			}
-			else if(c not_eq ATN_CODE_UNLISTEN)
-			//if(c not_eq ATN_CODE_UNLISTEN)
-			{
-
-				if(atn_cmd.command == ATN_CODE_OPEN) 
-				{
-					debugPrintf("\r\ncheckATN: %.2X (%.2X OPEN) (%.2X CHANNEL)", atn_cmd.code, atn_cmd.command, atn_cmd.channel);
-				}
-				else if(atn_cmd.command == ATN_CODE_CLOSE) 
-				{
-					debugPrintf("\r\ncheckATN: %.2X (%.2X CLOSE) (%.2X CHANNEL)", atn_cmd.code, atn_cmd.command, atn_cmd.channel);
-				}
-
-				// Some other command. Record the cmd string until UNLISTEN is sent
-				for(;;) 
-				{
-					c = (ATNCommand)receive();
-					if(m_state bitand errorFlag)
-					{
-						debugPrintf("\r\nm_state bitand errorFlag 2");
-						return ATN_ERROR;
-					}
-						
-
-					if((m_state bitand atnFlag) and (ATN_CODE_UNLISTEN == c)) 
-					{
-						debugPrintf(" [%s]", atn_cmd.str);
-						debugPrintf("\r\ncheckATN: %.2X (UNLISTEN)", c);
-						break;
-					}
-
-					if(i >= ATN_CMD_MAX_LENGTH) 
-					{
-						// Buffer is going to overflow, this is an error condition
-						// FIXME: here we should propagate the error type being overflow so that reading error channel can give right code out.
-						debugPrintf("\r\nATN_CMD_MAX_LENGTH");
-						return ATN_ERROR;
-					}
-					atn_cmd.str[i++] = c;
-					atn_cmd.str[i] = '\0';
-				}
-				ret = ATN_CMD;
-			}
+			ret = deviceListen(atn_cmd);
 		}
 		else if ( cc == ATN_CODE_TALK && isDeviceEnabled(atn_cmd.device) )
 		{
@@ -421,7 +368,64 @@ IEC::ATNCheck ICACHE_RAM_ATTR IEC::checkATN(ATNCmd& atn_cmd)
 
 IEC::ATNCheck ICACHE_RAM_ATTR IEC::deviceListen(ATNCmd& atn_cmd)
 {
+	byte i=0;
+	ATNCommand c;
 
+	// Okay, we will listen.
+	debugPrintf("(20 LISTEN) (%.2d DEVICE)", atn_cmd.device);
+
+	// If the command is DATA and it is not to expect just a small command on the command channel, then
+	// we're into something more heavy. Otherwise read it all out right here until UNLISTEN is received.
+	if(atn_cmd.command == ATN_CODE_DATA and atn_cmd.channel not_eq CMD_CHANNEL) 
+	{
+		// A heapload of data might come now, too big for this context to handle so the caller handles this, we're done here.
+		debugPrintf("\r\ncheckATN: %.2X (DATA)      (%.2X COMMAND) (%.2X CHANNEL)", atn_cmd.code, atn_cmd.command, atn_cmd.channel);
+		return ATN_CMD_LISTEN;
+	}
+	else if(atn_cmd.command not_eq ATN_CODE_UNLISTEN)
+	//if(c not_eq ATN_CODE_UNLISTEN)
+	{
+
+		if(atn_cmd.command == ATN_CODE_OPEN) 
+		{
+			debugPrintf("\r\ncheckATN: %.2X (%.2X OPEN) (%.2X CHANNEL)", atn_cmd.code, atn_cmd.command, atn_cmd.channel);
+		}
+		else if(atn_cmd.command == ATN_CODE_CLOSE) 
+		{
+			debugPrintf("\r\ncheckATN: %.2X (%.2X CLOSE) (%.2X CHANNEL)", atn_cmd.code, atn_cmd.command, atn_cmd.channel);
+		}
+
+		// Some other command. Record the cmd string until UNLISTEN is sent
+		for(;;) 
+		{
+			c = (ATNCommand)receive();
+			if(m_state bitand errorFlag)
+			{
+				debugPrintf("\r\nm_state bitand errorFlag 2");
+				return ATN_ERROR;
+			}
+				
+
+			if((m_state bitand atnFlag) and (ATN_CODE_UNLISTEN == c)) 
+			{
+				debugPrintf(" [%s]", atn_cmd.str);
+				debugPrintf("\r\ncheckATN: %.2X (UNLISTEN)", c);
+				break;
+			}
+
+			if(i >= ATN_CMD_MAX_LENGTH) 
+			{
+				// Buffer is going to overflow, this is an error condition
+				// FIXME: here we should propagate the error type being overflow so that reading error channel can give right code out.
+				debugPrintf("\r\nATN_CMD_MAX_LENGTH");
+				return ATN_ERROR;
+			}
+			atn_cmd.str[i++] = c;
+			atn_cmd.str[i] = '\0';
+		}
+		return ATN_CMD;
+	}
+	return ATN_IDLE;
 }
 
 IEC::ATNCheck ICACHE_RAM_ATTR IEC::deviceUnListen(ATNCmd& atn_cmd)
@@ -431,7 +435,7 @@ IEC::ATNCheck ICACHE_RAM_ATTR IEC::deviceUnListen(ATNCmd& atn_cmd)
 
 IEC::ATNCheck ICACHE_RAM_ATTR IEC::deviceTalk(ATNCmd& atn_cmd)
 {
-	byte i;
+	byte i=0;
 	ATNCommand c;
 
 	// Okay, we will talk soon
