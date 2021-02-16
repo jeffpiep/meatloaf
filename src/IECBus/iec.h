@@ -135,15 +135,15 @@ private:
 	inline boolean ICACHE_RAM_ATTR readPIN(byte pinNumber)
 	{
 		// To be able to read line we must be set to input, not driving.
-		pinMode(pinNumber, INPUT);
-		return digitalRead(pinNumber) ? true : false;
+		espPinMode(pinNumber, INPUT);
+		return espDigitalRead(pinNumber) ? true : false;
 	}
 
 	// true == PULL == HIGH, false == RELEASE == LOW
 	inline void ICACHE_RAM_ATTR writePIN(byte pinNumber, boolean state)
 	{
-		pinMode(pinNumber, state ? OUTPUT : INPUT);
-		digitalWrite(pinNumber, state ? LOW : HIGH);
+		espPinMode(pinNumber, state ? OUTPUT : INPUT);
+		espDigitalWrite(pinNumber, state ? LOW : HIGH);
 	}
 
 	inline void ICACHE_RAM_ATTR writeATN(boolean state)
@@ -164,6 +164,27 @@ private:
 	inline void ICACHE_RAM_ATTR writeSRQ(boolean state)
 	{
 		writePIN(IEC_PIN_SRQ, state);
+	}
+
+	inline void ICACHE_RAM_ATTR espPinMode(uint8_t pin, uint8_t mode) {
+		if(mode == OUTPUT){
+			GPF(pin) = GPFFS(GPFFS_GPIO(pin));//Set mode to GPIO
+			GPC(pin) = (GPC(pin) & (0xF << GPCI)); //SOURCE(GPIO) | DRIVER(NORMAL) | INT_TYPE(UNCHANGED) | WAKEUP_ENABLE(DISABLED)
+			GPES = (1 << pin); //Enable
+		} else if(mode == INPUT){
+			GPF(pin) = GPFFS(GPFFS_GPIO(pin));//Set mode to GPIO
+			GPEC = (1 << pin); //Disable
+			GPC(pin) = (GPC(pin) & (0xF << GPCI)) | (1 << GPCD); //SOURCE(GPIO) | DRIVER(OPEN_DRAIN) | INT_TYPE(UNCHANGED) | WAKEUP_ENABLE(DISABLED)
+		}
+	}
+
+	inline void ICACHE_RAM_ATTR espDigitalWrite(uint8_t pin, uint8_t val) {
+		if(val) GPOS = (1 << pin);
+		else GPOC = (1 << pin);
+	}
+
+	inline int ICACHE_RAM_ATTR espDigitalRead(uint8_t pin) {
+		return GPIP(pin);
 	}
 
 	// communication must be reset
