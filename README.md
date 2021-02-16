@@ -43,7 +43,7 @@ To Do
 * Add ZoomFloppy/IECHost capabilities
 * Add .URL/.WEBLOC file support (change URL/DIR when loading them)
 * If image isn't local, write saves to hidden folder ".save" (include hash of URL/PATH/IMAGE in filename)
-* Add web server for coinfiguration and control (http root hidden folder ".www")
+* Add web server for configuration and control (http root hidden folder ".www")
 
 
 References
