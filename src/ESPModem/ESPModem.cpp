@@ -538,10 +538,11 @@ void ESPModem::setup() {
 //     yield();
 //   }
 
-  if (tcpServerPort > 0) tcpServer.begin();
-
   WiFi.mode(WIFI_STA);
   connectWiFi();
+
+  if (tcpServerPort > 0)
+    tcpServer.begin();
 
   sendResult(Result_OK);
   //tcpServer(tcpServerPort); // can't start tcpServer inside a function-- must live outside
