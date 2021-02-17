@@ -170,6 +170,7 @@ private:
 	}
 
 	inline void ICACHE_RAM_ATTR espPinMode(uint8_t pin, uint8_t mode) {
+#if defined(ESP8266)		
 		if(mode == OUTPUT){
 			GPF(pin) = GPFFS(GPFFS_GPIO(pin));//Set mode to GPIO
 			GPC(pin) = (GPC(pin) & (0xF << GPCI)); //SOURCE(GPIO) | DRIVER(NORMAL) | INT_TYPE(UNCHANGED) | WAKEUP_ENABLE(DISABLED)
@@ -179,15 +180,28 @@ private:
 			GPEC = (1 << pin); //Disable
 			GPC(pin) = (GPC(pin) & (0xF << GPCI)) | (1 << GPCD); //SOURCE(GPIO) | DRIVER(OPEN_DRAIN) | INT_TYPE(UNCHANGED) | WAKEUP_ENABLE(DISABLED)
 		}
+#elif defined(ESP32)
+		pinMode(pin, mode);
+#endif
 	}
 
 	inline void ICACHE_RAM_ATTR espDigitalWrite(uint8_t pin, uint8_t val) {
+#if defined(ESP8266)
 		if(val) GPOS = (1 << pin);
 		else GPOC = (1 << pin);
+#elif defined(ESP32)
+		digitalWrite(pin, val);
+#endif
 	}
 
 	inline int ICACHE_RAM_ATTR espDigitalRead(uint8_t pin) {
-		return GPIP(pin);
+		int val = -1;
+#if defined(ESP8266)
+		val = GPIP(pin);
+#elif defined(ESP32)
+		val = digitalRead(pin);
+#endif
+		return val;
 	}
 
 	// communication must be reset
