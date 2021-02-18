@@ -25,6 +25,7 @@ bool DeviceDB::init(String db_file)
         int index2;
         String path;
 
+#if defined(USE_LITTLEFS)
         do
         {
             index = database.indexOf('/', index + 1);
@@ -36,6 +37,7 @@ bool DeviceDB::init(String db_file)
                 m_fileSystem->mkdir(path);
             }
         } while (index2 > -1);
+#endif
 
         Serial.printf("Creating Device Database [%s]\r\n", database.c_str());
         File f_database = m_fileSystem->open(database, "w+");

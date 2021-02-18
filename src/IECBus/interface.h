@@ -7,7 +7,7 @@
 #include <ESP8266HTTPClient.h>
 
 #if defined(USE_SPIFFS)
-#include <FS.h>
+#include <SPIFFS.h>
 #elif defined(USE_LITTLEFS)
 #include <LittleFS.h>
 #endif
@@ -117,7 +117,7 @@ private:
 #include <HTTPClient.h>
 
 #if defined(USE_SPIFFS)
-#include <FS.h>
+#include <SPIFFS.h>
 #elif defined(USE_LITTLEFS)
 #include <LittleFS.h>
 #endif

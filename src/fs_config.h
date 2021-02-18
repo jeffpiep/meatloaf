@@ -1,7 +1,7 @@
 #ifndef CONFIG_FS_H
 #define CONFIG_FS_H
 
-#if defined USE_SPIFFS
+#if defined(USE_SPIFFS)
 #if defined(ESP32)
 	#include <SPIFFS.h>
 #endif

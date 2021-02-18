@@ -10,7 +10,6 @@
 #define UPDATE_URL "http://c64.idolpx.com/fw/meatloaf64.4MB.bin"
 //#define UPDATE_URL      "http://c64.idolpx.com/fw/meatloaf64.16MB.bin"
 #define DEVICE_DB "/.sys/devices.db"
-
 #define HOSTNAME "MeatLoaf64"
 #define SERVER_PORT 80   // WebDAV Server Port
 #define LISTEN_PORT 6400 // Listen to this if not connected. Set to zero to disable.
