@@ -115,6 +115,7 @@ inline static void ledOFF()
 #endif
 
 // Enable this to show the data stream while loading
+// Make sure device baud rate and monitor_speed = 921600
 //#define DATA_STREAM
 
 // This should be defined if the RESET line is soldered in the IEC DIN connector. When defined it will give the

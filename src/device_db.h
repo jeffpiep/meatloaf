@@ -20,6 +20,7 @@ public:
 
     bool init(String database);
     bool check();
+    bool save();
 
     String database;
 

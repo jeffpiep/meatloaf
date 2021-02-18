@@ -499,9 +499,6 @@ byte  IEC::receive()
 //
 boolean  IEC::send(byte data)
 {
-#ifdef DATA_STREAM
-	debugPrintf("%.2X ", data);
-#endif
 	return sendByte(data, false);
 } // send
 
