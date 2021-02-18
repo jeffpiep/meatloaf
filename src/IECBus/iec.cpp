@@ -31,7 +31,7 @@ boolean  IEC::init()
 	pinMode(IEC_PIN_ATN, INPUT);
 	pinMode(IEC_PIN_CLOCK, INPUT);
 	pinMode(IEC_PIN_DATA, INPUT);
-	pinMode(IEC_PIN_RESET, INPUT);
+//	pinMode(IEC_PIN_RESET, INPUT);
 
 
 	// Set port low, we don't need internal pullup
@@ -477,12 +477,11 @@ IEC::ATNCheck  IEC::deviceUnTalk(ATNCmd& atn_cmd)
 
 }
 
-boolean  IEC::checkRESET()
-{
-	//	return false;
-	//	// hmmm. Is this all todo?
-	return readRESET();
-} // checkRESET
+//boolean  IEC::checkRESET()
+//{
+//	return readRESET();
+//	return false;
+//} // checkRESET
 
 
 // IEC_receive receives a byte

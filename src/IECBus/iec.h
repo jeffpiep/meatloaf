@@ -70,7 +70,7 @@ public:
 
 	// Checks if CBM is sending a reset (setting the RESET line high). This is typicall
 	// when the CBM is reset itself. In this case, we are supposed to reset all states to initial.
-	boolean checkRESET();
+//	boolean checkRESET();
 
 	// Sends a byte. The communication must be in the correct state: a load command
 	// must just have been recieved. If something is not OK, FALSE is returned.
@@ -108,15 +108,15 @@ public:
 		return readPIN(IEC_PIN_DATA);
 	}
 
-	inline boolean readSRQ()
-	{
-		return readPIN(IEC_PIN_SRQ);
-	}
+//	inline boolean readSRQ()
+//	{
+//		return readPIN(IEC_PIN_SRQ);
+//	}
 
-	inline boolean readRESET()
-	{
-		return readPIN(IEC_PIN_RESET);
-	}
+//	inline boolean readRESET()
+//	{
+//		return readPIN(IEC_PIN_RESET);
+//	}
 
 private:
 	// IEC Bus Commands
@@ -164,10 +164,10 @@ private:
 		writePIN(IEC_PIN_DATA, state);
 	}
 
-	inline void writeSRQ(boolean state)
-	{
-		writePIN(IEC_PIN_SRQ, state);
-	}
+//	inline void writeSRQ(boolean state)
+//	{
+//		writePIN(IEC_PIN_SRQ, state);
+//	}
 
 	inline void ICACHE_RAM_ATTR espPinMode(uint8_t pin, uint8_t mode) {
 #if defined(ESP8266)		
@@ -181,7 +181,46 @@ private:
 			GPC(pin) = (GPC(pin) & (0xF << GPCI)) | (1 << GPCD); //SOURCE(GPIO) | DRIVER(OPEN_DRAIN) | INT_TYPE(UNCHANGED) | WAKEUP_ENABLE(DISABLED)
 		}
 #elif defined(ESP32)
-		pinMode(pin, mode);
+			pinMode( pin, mode );
+
+		// uint32_t pinFunction = 0, pinControl = 0;
+
+		// //lock gpio
+		// if(mode & INPUT) {
+		// 	if(pin < 32) {
+		// 		GPIO.enable_w1tc = ((uint32_t)1 << pin);
+		// 	} else {
+		// 		GPIO.enable1_w1tc.val = ((uint32_t)1 << (pin - 32));
+		// 	}
+		// } else if(mode & OUTPUT) {
+		// 	if(pin > 33){
+		// 		//unlock gpio
+		// 		return;//pins above 33 can be only inputs
+		// 	} else if(pin < 32) {
+		// 		GPIO.enable_w1ts = ((uint32_t)1 << pin);
+		// 	} else {
+		// 		GPIO.enable1_w1ts.val = ((uint32_t)1 << (pin - 32));
+		// 	}
+		// }
+
+		// pinFunction |= ((uint32_t)2 << FUN_DRV_S);//what are the drivers?
+		// pinFunction |= FUN_IE;//input enable but required for output as well?
+
+		// if(mode & (INPUT | OUTPUT)) {
+		// 	pinFunction |= ((uint32_t)2 << MCU_SEL_S);
+		// } else if(mode == SPECIAL) {
+		// 	pinFunction |= ((uint32_t)(((pin)==1||(pin)==3)?0:1) << MCU_SEL_S);
+		// } else {
+		// 	pinFunction |= ((uint32_t)(mode >> 5) << MCU_SEL_S);
+		// }
+
+		// ESP_REG(DR_REG_IO_MUX_BASE + esp32_gpioMux[pin].reg) = pinFunction;
+
+		// if(mode & OPEN_DRAIN) {
+		// 	pinControl = (1 << GPIO_PIN0_PAD_DRIVER_S);
+		// }
+
+		// GPIO.pin[pin].val = pinControl;
 #endif
 	}
 

@@ -206,10 +206,10 @@ byte Interface::loop(void)
 	//	}
 	//#endif
 	// Wait for it to get out of reset.
-	while (m_iec.checkRESET())
-	{
-		debugPrintln("ATN_RESET");
-	}
+	//while (m_iec.checkRESET())
+	//{
+	//	debugPrintln("ATN_RESET");
+	//}
 
 	//	noInterrupts();
 	IEC::ATNCheck retATN = m_iec.checkATN(m_atn_cmd);
@@ -1219,10 +1219,10 @@ byte Interface::loop(void)
     //	}
     //#endif
     // Wait for it to get out of reset.
-    while (m_iec.checkRESET())
-    {
-        debugPrintln("ATN_RESET");
-    }
+    //while (m_iec.checkRESET())
+    //{
+    //    debugPrintln("ATN_RESET");
+    //}
 
     //	noInterrupts();
     IEC::ATNCheck retATN = m_iec.checkATN(m_atn_cmd);

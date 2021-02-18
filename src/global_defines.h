@@ -15,48 +15,48 @@
 #define LISTEN_PORT 6400 // Listen to this if not connected. Set to zero to disable.
 
 // ESP8266 GPIO to C64 User Port
-#define TX_PIN TX // TX   //64-B+C+7  //64-A+1+N+12=GND, 64-2=+5v, 64-L+6
-#define RX_PIN RX // RX   //64-M+5
+#define TX_PIN               TX  // TX   //64-B+C+7  //64-A+1+N+12=GND, 64-2=+5v, 64-L+6
+#define RX_PIN               RX  // RX   //64-M+5
 #if defined(ESP32)
-#define CTS_PIN 22 // IO5  //64-D      // CTS Clear to Send, connect to host's RTS pin
-#define RTS_PIN 23 // IO4  //64-K      // RTS Request to Send, connect to host's CTS pin
-#define DCD_PIN 25 // IO0  //64-H      // DCD Carrier Status, GPIO0 (programming mode pin)
+    #define CTS_PIN          21  // IO21 DATAIN  //64-D      // CTS Clear to Send, connect to host's RTS pin
+    #define RTS_PIN          22  // IO22 PROC    //64-K      // RTS Request to Send, connect to host's CTS pin
+    #define DCD_PIN          26  // IO26 INT     //64-H      // DCD Carrier Status
 #elif defined(ESP8266)
-#define CTS_PIN D1 // IO5  //64-D      // CTS Clear to Send, connect to host's RTS pin
-#define RTS_PIN D2 // IO4  //64-K      // RTS Request to Send, connect to host's CTS pin
-#define DCD_PIN D3 // IO0  //64-H      // DCD Carrier Status, GPIO0 (programming mode pin)
-//#define SWITCH_PIN      D4      // IO2              // Long press to reset to 300KBPS Mode
+    #define CTS_PIN          D1  // IO5  //64-D      // CTS Clear to Send, connect to host's RTS pin
+    #define RTS_PIN          D2  // IO4  //64-K      // RTS Request to Send, connect to host's CTS pin
+    #define DCD_PIN          D3  // IO0  //64-H      // DCD Carrier Status, GPIO0 (programming mode pin)
+//#define SWITCH_PIN  D4  // IO2              // Long press to reset to 300KBPS Mode
 #endif
 
-#define RING_INTERVAL 3000 // How often to print RING when having a new incoming connection (ms)
-#define MAX_CMD_LENGTH 256 // Maximum length for AT command
-#define TX_BUF_SIZE 256    // Buffer where to read from serial before writing to TCP
+#define RING_INTERVAL        3000  // How often to print RING when having a new incoming connection (ms)
+#define MAX_CMD_LENGTH       256   // Maximum length for AT command
+#define TX_BUF_SIZE          256   // Buffer where to read from serial before writing to TCP
 
 #if defined(ESP32)
 // ESP32 GPIO to C64 IEC Serial Port
-#define IEC_PIN_ATN 16   // IO14
-#define IEC_PIN_CLOCK 17 // IO12
-#define IEC_PIN_DATA 18  // IO13
-#define IEC_PIN_SRQ 19   // IO16
-#define IEC_PIN_RESET 21 // IO15
+#define IEC_PIN_ATN          39    // IO39 CMD
+#define IEC_PIN_CLOCK        27    // IO27 CKIN
+#define IEC_PIN_DATA         32    // IO32 CKOUT
+//#define IEC_PIN_SRQ         26    // IO26 INT
+//#define IEC_PIN_RESET       21    // IO15
 #elif defined(ESP8266)
 // ESP8266 GPIO to C64 IEC Serial Port
-#define IEC_PIN_ATN D5   // IO14
-#define IEC_PIN_CLOCK D6 // IO12
-#define IEC_PIN_DATA D7  // IO13
-#define IEC_PIN_SRQ D0   // IO16
-#define IEC_PIN_RESET D8 // IO15
+#define IEC_PIN_ATN          D5    // IO14
+#define IEC_PIN_CLOCK        D6    // IO12
+#define IEC_PIN_DATA         D7    // IO13
+//#define IEC_PIN_SRQ         D0    // IO16
+//#define IEC_PIN_RESET       D8    // IO15
 #endif
 
 // IEC protocol timing consts:
-#define TIMING_BIT 60          // bit clock hi/lo time     (us)
-#define TIMING_NO_EOI 20       // delay before bits        (us)
-#define TIMING_EOI_WAIT 200    // delay to signal EOI      (us)
-#define TIMING_EOI_THRESH 20   // threshold for EOI detect (*10 us approx)
-#define TIMING_STABLE_WAIT 20  // line stabilization       (us)
-#define TIMING_ATN_PREDELAY 50 // delay required in atn    (us)
-#define TIMING_ATN_DELAY 100   // delay required after atn (us)
-#define TIMING_FNF_DELAY 100   // delay after fnf?         (us)
+#define TIMING_BIT           60    // bit clock hi/lo time     (us)
+#define TIMING_NO_EOI        20    // delay before bits        (us)
+#define TIMING_EOI_WAIT      200   // delay to signal EOI      (us)
+#define TIMING_EOI_THRESH    20    // threshold for EOI detect (*10 us approx)
+#define TIMING_STABLE_WAIT   20    // line stabilization       (us)
+#define TIMING_ATN_PREDELAY  50    // delay required in atn    (us)
+#define TIMING_ATN_DELAY     100   // delay required after atn (us)
+#define TIMING_FNF_DELAY     100   // delay after fnf?         (us)
 
 // Version 0.5 equivalent timings: 70, 5, 200, 20, 20, 50, 100, 100
 
