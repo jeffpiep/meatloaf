@@ -4,46 +4,59 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
-#define PRODUCT_ID      "MEAT LOAF 64"
-#define FW_VERSION      "20200923.01"  // Dynamically set at compile time in "platformio.ini"
+#define PRODUCT_ID "MEAT LOAF 64"
+#define FW_VERSION "20200923.01" // Dynamically set at compile time in "platformio.ini"
 //#define UPDATE_URL      "http://c64.idolpx.com/fw/?p=MeatLoaf64&d={{DEVICE_ID}}&a="
-//#define UPDATE_URL      "http://c64.idolpx.com/fw/meatloaf64.4MB.bin"
-#define UPDATE_URL      "http://c64.idolpx.com/fw/meatloaf64.16MB.bin"
-#define DEVICE_DB         "/.sys/devices.db"
-
-#define HOSTNAME		"MeatLoaf64"
-#define SERVER_PORT		80      // WebDAV Server Port
-#define LISTEN_PORT     6400    // Listen to this if not connected. Set to zero to disable.
+#define UPDATE_URL "http://c64.idolpx.com/fw/meatloaf64.4MB.bin"
+//#define UPDATE_URL      "http://c64.idolpx.com/fw/meatloaf64.16MB.bin"
+#define DEVICE_DB "/.sys/devices.db"
+#define HOSTNAME "MeatLoaf64"
+#define SERVER_PORT 80   // WebDAV Server Port
+#define LISTEN_PORT 6400 // Listen to this if not connected. Set to zero to disable.
 
 // ESP8266 GPIO to C64 User Port
-#define TX_PIN          TX      // TX   //64-B+C+7  //64-A+1+N+12=GND, 64-2=+5v, 64-L+6
-#define RX_PIN          RX      // RX   //64-M+5
-#define CTS_PIN         D1      // IO5  //64-D      // CTS Clear to Send, connect to host's RTS pin
-#define RTS_PIN         D2      // IO4  //64-K      // RTS Request to Send, connect to host's CTS pin
-#define DCD_PIN         D3      // IO0  //64-H      // DCD Carrier Status, GPIO0 (programming mode pin)
+#define TX_PIN TX // TX   //64-B+C+7  //64-A+1+N+12=GND, 64-2=+5v, 64-L+6
+#define RX_PIN RX // RX   //64-M+5
+#if defined(ESP32)
+#define CTS_PIN 22 // IO5  //64-D      // CTS Clear to Send, connect to host's RTS pin
+#define RTS_PIN 23 // IO4  //64-K      // RTS Request to Send, connect to host's CTS pin
+#define DCD_PIN 25 // IO0  //64-H      // DCD Carrier Status, GPIO0 (programming mode pin)
+#elif defined(ESP8266)
+#define CTS_PIN D1 // IO5  //64-D      // CTS Clear to Send, connect to host's RTS pin
+#define RTS_PIN D2 // IO4  //64-K      // RTS Request to Send, connect to host's CTS pin
+#define DCD_PIN D3 // IO0  //64-H      // DCD Carrier Status, GPIO0 (programming mode pin)
 //#define SWITCH_PIN      D4      // IO2              // Long press to reset to 300KBPS Mode
+#endif
 
-#define RING_INTERVAL   3000    // How often to print RING when having a new incoming connection (ms)
-#define MAX_CMD_LENGTH  256     // Maximum length for AT command
-#define TX_BUF_SIZE     256     // Buffer where to read from serial before writing to TCP
+#define RING_INTERVAL 3000 // How often to print RING when having a new incoming connection (ms)
+#define MAX_CMD_LENGTH 256 // Maximum length for AT command
+#define TX_BUF_SIZE 256    // Buffer where to read from serial before writing to TCP
 
-
+#if defined(ESP32)
+// ESP32 GPIO to C64 IEC Serial Port
+#define IEC_PIN_ATN 16   // IO14
+#define IEC_PIN_CLOCK 17 // IO12
+#define IEC_PIN_DATA 18  // IO13
+#define IEC_PIN_SRQ 19   // IO16
+#define IEC_PIN_RESET 21 // IO15
+#elif defined(ESP8266)
 // ESP8266 GPIO to C64 IEC Serial Port
-#define IEC_PIN_ATN     D5      // IO14
-#define IEC_PIN_CLOCK   D6      // IO12
-#define IEC_PIN_DATA    D7      // IO13
-#define IEC_PIN_SRQ     D0      // IO16
-#define IEC_PIN_RESET   D8      // IO15
+#define IEC_PIN_ATN D5   // IO14
+#define IEC_PIN_CLOCK D6 // IO12
+#define IEC_PIN_DATA D7  // IO13
+#define IEC_PIN_SRQ D0   // IO16
+#define IEC_PIN_RESET D8 // IO15
+#endif
 
 // IEC protocol timing consts:
-#define TIMING_BIT          60  // bit clock hi/lo time     (us)
-#define TIMING_NO_EOI       20  // delay before bits        (us)
-#define TIMING_EOI_WAIT     200 // delay to signal EOI      (us)
-#define TIMING_EOI_THRESH   20  // threshold for EOI detect (*10 us approx)
-#define TIMING_STABLE_WAIT  20  // line stabilization       (us)
-#define TIMING_ATN_PREDELAY 50  // delay required in atn    (us)
-#define TIMING_ATN_DELAY    100 // delay required after atn (us)
-#define TIMING_FNF_DELAY    100 // delay after fnf?         (us)
+#define TIMING_BIT 60          // bit clock hi/lo time     (us)
+#define TIMING_NO_EOI 20       // delay before bits        (us)
+#define TIMING_EOI_WAIT 200    // delay to signal EOI      (us)
+#define TIMING_EOI_THRESH 20   // threshold for EOI detect (*10 us approx)
+#define TIMING_STABLE_WAIT 20  // line stabilization       (us)
+#define TIMING_ATN_PREDELAY 50 // delay required in atn    (us)
+#define TIMING_ATN_DELAY 100   // delay required after atn (us)
+#define TIMING_FNF_DELAY 100   // delay after fnf?         (us)
 
 // Version 0.5 equivalent timings: 70, 5, 200, 20, 20, 50, 100, 100
 
@@ -55,18 +68,17 @@
 //
 
 // See timeoutWait
-#define TIMEOUT  65500
+#define TIMEOUT 65500
 
-
-#define LED_PIN         D4      // IO2
-#define LED_ON          LOW
-#define LED_OFF         HIGH
-#define LED_TIME        15      // #ms between toggle
+#define LED_PIN LED_BUILTIN // IO2
+#define LED_ON LOW
+#define LED_OFF HIGH
+#define LED_TIME 15 // #ms between toggle
 
 //#define DEVICE_MASK     0b01111111111111111111111111110000  //  Devices 4-30 are enabled by default
-#define DEVICE_MASK     0b00000000000000000000111100000000  //  Devices 8-11
-#define IMAGE_TYPES     "D64|D71|D80|D81|D82|D8B|G64|X64|Z64|TAP|T64|TCRT|CRT|D1M|D2M|D4M|DHD|HDD|DNP|DFI|M2I|NIB"
-#define FILE_TYPES      "C64|PRG|P00|SEQ|S00|USR|U00|REL|R00"
+#define DEVICE_MASK 0b00000000000000000000111100000000 //  Devices 8-11
+#define IMAGE_TYPES "D64|D71|D80|D81|D82|D8B|G64|X64|Z64|TAP|T64|TCRT|CRT|D1M|D2M|D4M|DHD|HDD|DNP|DFI|M2I|NIB"
+#define FILE_TYPES "C64|PRG|P00|SEQ|S00|USR|U00|REL|R00"
 
 static void toggleLED(bool now = false)
 {
@@ -76,31 +88,30 @@ static void toggleLED(bool now = false)
     {
         digitalWrite(LED_PIN, !digitalRead(LED_PIN));
         ledTime = millis();
-    }   
+    }
 }
 
-static void ledON()
+inline static void ledON()
 {
     digitalWrite(LED_PIN, LED_ON);
 }
 
-static void ledOFF()
+inline static void ledOFF()
 {
     digitalWrite(LED_PIN, LED_OFF);
 }
 
-
 // Enable this for verbose logging of IEC and CBM interfaces.
-//#define DEBUG
+// #define DEBUG // define in platformio.ini
 
 #ifdef DEBUG
-    #define debugPrint(...) Serial.print(__VA_ARGS__)
-    #define debugPrintln(...) Serial.println(__VA_ARGS__)
-    #define debugPrintf(...) Serial.printf(__VA_ARGS__)
+#define debugPrint(...) Serial.print(__VA_ARGS__)
+#define debugPrintln(...) Serial.println(__VA_ARGS__)
+#define debugPrintf(...) Serial.printf(__VA_ARGS__)
 #else
-    #define debugPrint(...)
-    #define debugPrintln(...)
-    #define debugPrintf(...)
+#define debugPrint(...)
+#define debugPrintln(...)
+#define debugPrintf(...)
 #endif
 
 // Enable this to show the data stream while loading
@@ -113,20 +124,20 @@ static void ledOFF()
 // Define this to reset the commodore 64 when the esp2iec is reset
 //#define RESET_C64
 
-// Select the FileSystem by uncommenting one of the lines below
+// Select the FileSystem in PLATFORMIO.INI file
 //#define USE_SPIFFS
-#define USE_LITTLEFS
+//#define USE_LITTLEFS
 //#define USE_SDFS
 
 // Format storage if a valid file system is not found
 #define AUTO_FORMAT true
 
 #if defined USE_SPIFFS
-	#define FS_TYPE "SPIFFS"
+#define FS_TYPE "SPIFFS"
 #elif defined USE_LITTLEFS
-	#define FS_TYPE "LITTLEFS"
+#define FS_TYPE "LITTLEFS"
 #elif defined USE_SDFS
-	#define FS_TYPE "SDFS"
+#define FS_TYPE "SDFS"
 #endif
 
 #endif // GLOBAL_DEFINES_H

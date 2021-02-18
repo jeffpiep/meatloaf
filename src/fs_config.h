@@ -1,10 +1,16 @@
 #ifndef CONFIG_FS_H
 #define CONFIG_FS_H
 
-#if defined USE_SPIFFS
+#if defined(USE_SPIFFS)
+#if defined(ESP32)
+	#include <SPIFFS.h>
+#endif
 	#include <FS.h>
 	FS* fileSystem = &SPIFFS;
+	
+#if defined(ESP8266)
 	SPIFFSConfig fileSystemConfig = SPIFFSConfig();
+#endif
 #elif defined USE_LITTLEFS
 	#include <LittleFS.h>
 	FS* fileSystem = &LittleFS;

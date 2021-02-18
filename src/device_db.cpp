@@ -25,6 +25,7 @@ bool DeviceDB::init(String db_file)
         int index2;
         String path;
 
+#if defined(USE_LITTLEFS)
         do
         {
             index = database.indexOf('/', index + 1);
@@ -36,6 +37,7 @@ bool DeviceDB::init(String db_file)
                 m_fileSystem->mkdir(path);
             }
         } while (index2 > -1);
+#endif
 
         Serial.printf("Creating Device Database [%s]\r\n", database.c_str());
         File f_database = m_fileSystem->open(database, "w+");
@@ -46,7 +48,11 @@ bool DeviceDB::init(String db_file)
         }
         else
         {
+#if defined(ESP32)
+            uint8_t buffer[RECORD_SIZE] = { 0 };
+#elif defined(ESP8266)
             const char buffer[RECORD_SIZE] = { 0 };
+#endif
             for(byte i = 0; i < 31; i++) // 22 devices x 2 drives = 44 records x 256 bytes = 11264 total bytes
             {
                 sprintf( (char *)buffer, "{\"device\":%d,\"drive\":0,\"partition\":0,\"url\":\"\",\"path\":\"/\",\"image\":\"\"}", i );
@@ -115,7 +121,11 @@ bool DeviceDB::select(byte new_device)
         offset = device * RECORD_SIZE;
         debugPrintf("\r\nDeviceDB::select m_dirty: %d, %.4X", device, offset);
         f_database.seek( offset, SeekSet );
+#if defined(ESP32)
+        f_database.write((const uint8_t *)m_device.as<String>().c_str(),strlen(m_device.as<String>().c_str()));
+#elif defined(ESP8266)
         f_database.write(m_device.as<String>().c_str());
+#endif
         m_dirty = false;
     }
 

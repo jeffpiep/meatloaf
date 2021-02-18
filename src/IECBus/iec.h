@@ -7,46 +7,49 @@
 #include "cbmdefines.h"
 #include "Petscii.h"
 
-
 class IEC
 {
 public:
-
-	enum IECState {
-		noFlags   = 0,
-		eoiFlag   = (1 << 0),   // might be set by iec_receive
-		atnFlag   = (1 << 1),   // might be set by iec_receive
-		errorFlag = (1 << 2)    // If this flag is set, something went wrong and
+	enum IECState
+	{
+		noFlags = 0,
+		eoiFlag = (1 << 0),	 // might be set by iec_receive
+		atnFlag = (1 << 1),	 // might be set by iec_receive
+		errorFlag = (1 << 2) // If this flag is set, something went wrong and
 	};
 
 	// Return values for checkATN:
-	enum ATNCheck {
-		ATN_IDLE = 0,           // Nothing recieved of our concern
-		ATN_CMD = 1,            // A command is recieved
-		ATN_CMD_LISTEN = 2,     // A command is recieved and data is coming to us
-		ATN_CMD_TALK = 3,       // A command is recieved and we must talk now
-		ATN_ERROR = 4,          // A problem occoured, reset communication
-		ATN_RESET = 5		    // The IEC bus is in a reset state (RESET line).
+	enum ATNCheck
+	{
+		ATN_IDLE = 0,		// Nothing recieved of our concern
+		ATN_CMD = 1,		// A command is recieved
+		ATN_CMD_LISTEN = 2, // A command is recieved and data is coming to us
+		ATN_CMD_TALK = 3,	// A command is recieved and we must talk now
+		ATN_ERROR = 4,		// A problem occoured, reset communication
+		ATN_RESET = 5		// The IEC bus is in a reset state (RESET line).
 	};
 
 	// IEC ATN commands:
-	enum ATNCommand {
-		ATN_CODE_GLOBAL = 0x00,		// 0x00 + cmd (global command)
-		ATN_CODE_LISTEN = 0x20,		// 0x20 + device_id (LISTEN)
-		ATN_CODE_UNLISTEN = 0x3F,	// 0x3F (UNLISTEN)
-		ATN_CODE_TALK = 0x40,		// 0x40 + device_id (TALK)
-		ATN_CODE_UNTALK = 0x5F,		// 0x5F (UNTALK)
-		ATN_CODE_DATA = 0x60,		// 0x60 + channel (SECOND)
-		ATN_CODE_CLOSE = 0xE0,  	// 0xE0 + channel (CLOSE)
-		ATN_CODE_OPEN = 0xF0		// 0xF0 + channel (OPEN)
+	enum ATNCommand
+	{
+		ATN_CODE_GLOBAL = 0x00,	  // 0x00 + cmd (global command)
+		ATN_CODE_LISTEN = 0x20,	  // 0x20 + device_id (LISTEN)
+		ATN_CODE_UNLISTEN = 0x3F, // 0x3F (UNLISTEN)
+		ATN_CODE_TALK = 0x40,	  // 0x40 + device_id (TALK)
+		ATN_CODE_UNTALK = 0x5F,	  // 0x5F (UNTALK)
+		ATN_CODE_DATA = 0x60,	  // 0x60 + channel (SECOND)
+		ATN_CODE_CLOSE = 0xE0,	  // 0xE0 + channel (CLOSE)
+		ATN_CODE_OPEN = 0xF0	  // 0xF0 + channel (OPEN)
 	};
 
 	// ATN command struct maximum command length:
-	enum {
+	enum
+	{
 		ATN_CMD_MAX_LENGTH = 40
 	};
-	
-	typedef struct _tagATNCMD {
+
+	typedef struct _tagATNCMD
+	{
 		byte code;
 		byte command;
 		byte channel;
@@ -56,83 +59,83 @@ public:
 	} ATNCmd;
 
 	IEC();
-	~IEC(){}
+	~IEC() {}
 
 	// Initialise iec driver
-	boolean ICACHE_RAM_ATTR init();
+	boolean init();
 
 	// Checks if CBM is sending an attention message. If this is the case,
 	// the message is recieved and stored in atn_cmd.
-	ATNCheck ICACHE_RAM_ATTR checkATN(ATNCmd& atn_cmd);
+	ATNCheck checkATN(ATNCmd &atn_cmd);
 
 	// Checks if CBM is sending a reset (setting the RESET line high). This is typicall
 	// when the CBM is reset itself. In this case, we are supposed to reset all states to initial.
-	boolean ICACHE_RAM_ATTR checkRESET();
+	boolean checkRESET();
 
 	// Sends a byte. The communication must be in the correct state: a load command
 	// must just have been recieved. If something is not OK, FALSE is returned.
-	boolean ICACHE_RAM_ATTR send(byte data);
+	boolean send(byte data);
 
 	// Same as IEC_send, but indicating that this is the last byte.
-	boolean ICACHE_RAM_ATTR sendEOI(byte data);
+	boolean sendEOI(byte data);
 
 	// A special send command that informs file not found condition
-	boolean ICACHE_RAM_ATTR sendFNF();
+	boolean sendFNF();
 
 	// Recieves a byte
-	byte ICACHE_RAM_ATTR receive();
+	byte receive();
 
 	// Enabled Device Bit Mask
 	uint32_t enabledDevices;
-	bool ICACHE_RAM_ATTR isDeviceEnabled(const byte deviceNumber);
+	bool isDeviceEnabled(const byte deviceNumber);
 	void enableDevice(const byte deviceNumber);
 	void disableDevice(const byte deviceNumber);
 
-	IECState ICACHE_RAM_ATTR state() const;
+	IECState state() const;
 
-	inline ICACHE_RAM_ATTR boolean readATN()
+	inline boolean readATN()
 	{
 		return readPIN(IEC_PIN_ATN);
 	}
 
-	inline ICACHE_RAM_ATTR boolean readCLOCK()
+	inline boolean readCLOCK()
 	{
 		return readPIN(IEC_PIN_CLOCK);
 	}
 
-	inline ICACHE_RAM_ATTR boolean readDATA()
+	inline boolean readDATA()
 	{
 		return readPIN(IEC_PIN_DATA);
 	}
 
-	inline ICACHE_RAM_ATTR boolean readSRQ()
+	inline boolean readSRQ()
 	{
 		return readPIN(IEC_PIN_SRQ);
 	}
 
-	inline ICACHE_RAM_ATTR boolean readRESET()
+	inline boolean readRESET()
 	{
 		return readPIN(IEC_PIN_RESET);
 	}
 
 private:
 	// IEC Bus Commands
-	ATNCheck ICACHE_RAM_ATTR deviceListen(ATNCmd& atn_cmd);		// 0x20 + device_id 	Listen, device (0–30)
-	ATNCheck ICACHE_RAM_ATTR deviceUnListen(ATNCmd& atn_cmd);	// 0x3F 				Unlisten, all devices
-	ATNCheck ICACHE_RAM_ATTR deviceTalk(ATNCmd& atn_cmd);		// 0x40 + device_id 	Talk, device 
-	ATNCheck ICACHE_RAM_ATTR deviceUnTalk(ATNCmd& atn_cmd);		// 0x5F 				Untalk, all devices 
-	ATNCheck ICACHE_RAM_ATTR deviceReopen(ATNCmd& atn_cmd);		// 0x60 + channel		Reopen, channel (0–15)
-	ATNCheck ICACHE_RAM_ATTR deviceClose(ATNCmd& atn_cmd);		// 0xE0 + channel		Close, channel
-	ATNCheck ICACHE_RAM_ATTR deviceOpen(ATNCmd& atn_cmd);		// 0xF0 + channel		Open, channel
+	ATNCheck deviceListen(ATNCmd &atn_cmd);	  // 0x20 + device_id 	Listen, device (0–30)
+	ATNCheck deviceUnListen(ATNCmd &atn_cmd); // 0x3F 				Unlisten, all devices
+	ATNCheck deviceTalk(ATNCmd &atn_cmd);	  // 0x40 + device_id 	Talk, device
+	ATNCheck deviceUnTalk(ATNCmd &atn_cmd);	  // 0x5F 				Untalk, all devices
+	ATNCheck deviceReopen(ATNCmd &atn_cmd);	  // 0x60 + channel		Reopen, channel (0–15)
+	ATNCheck deviceClose(ATNCmd &atn_cmd);	  // 0xE0 + channel		Close, channel
+	ATNCheck deviceOpen(ATNCmd &atn_cmd);	  // 0xF0 + channel		Open, channel
 
-	byte ICACHE_RAM_ATTR timeoutWait(byte waitBit, boolean whileHigh);
-	byte ICACHE_RAM_ATTR receiveByte(void);
-	boolean ICACHE_RAM_ATTR sendByte(byte data, boolean signalEOI);
-	boolean ICACHE_RAM_ATTR turnAround(void);
-	boolean ICACHE_RAM_ATTR undoTurnAround(void);
+	byte timeoutWait(byte waitBit, boolean whileHigh);
+	byte receiveByte(void);
+	boolean sendByte(byte data, boolean signalEOI);
+	boolean turnAround(void);
+	boolean undoTurnAround(void);
 
 	// false = LOW, true == HIGH
-	inline boolean ICACHE_RAM_ATTR readPIN(byte pinNumber)
+	boolean readPIN(byte pinNumber)
 	{
 		// To be able to read line we must be set to input, not driving.
 		espPinMode(pinNumber, INPUT);
@@ -140,33 +143,34 @@ private:
 	}
 
 	// true == PULL == HIGH, false == RELEASE == LOW
-	inline void ICACHE_RAM_ATTR writePIN(byte pinNumber, boolean state)
+	void writePIN(byte pinNumber, boolean state)
 	{
 		espPinMode(pinNumber, state ? OUTPUT : INPUT);
 		espDigitalWrite(pinNumber, state ? LOW : HIGH);
 	}
 
-	inline void ICACHE_RAM_ATTR writeATN(boolean state)
+	inline void writeATN(boolean state)
 	{
 		writePIN(IEC_PIN_ATN, state);
 	}
 
-	inline void ICACHE_RAM_ATTR writeCLOCK(boolean state)
+	inline void writeCLOCK(boolean state)
 	{
 		writePIN(IEC_PIN_CLOCK, state);
 	}
 
-	inline void ICACHE_RAM_ATTR writeDATA(boolean state)
+	inline void writeDATA(boolean state)
 	{
 		writePIN(IEC_PIN_DATA, state);
 	}
 
-	inline void ICACHE_RAM_ATTR writeSRQ(boolean state)
+	inline void writeSRQ(boolean state)
 	{
 		writePIN(IEC_PIN_SRQ, state);
 	}
 
 	inline void ICACHE_RAM_ATTR espPinMode(uint8_t pin, uint8_t mode) {
+#if defined(ESP8266)		
 		if(mode == OUTPUT){
 			GPF(pin) = GPFFS(GPFFS_GPIO(pin));//Set mode to GPIO
 			GPC(pin) = (GPC(pin) & (0xF << GPCI)); //SOURCE(GPIO) | DRIVER(NORMAL) | INT_TYPE(UNCHANGED) | WAKEUP_ENABLE(DISABLED)
@@ -176,15 +180,28 @@ private:
 			GPEC = (1 << pin); //Disable
 			GPC(pin) = (GPC(pin) & (0xF << GPCI)) | (1 << GPCD); //SOURCE(GPIO) | DRIVER(OPEN_DRAIN) | INT_TYPE(UNCHANGED) | WAKEUP_ENABLE(DISABLED)
 		}
+#elif defined(ESP32)
+		pinMode(pin, mode);
+#endif
 	}
 
 	inline void ICACHE_RAM_ATTR espDigitalWrite(uint8_t pin, uint8_t val) {
+#if defined(ESP8266)
 		if(val) GPOS = (1 << pin);
 		else GPOC = (1 << pin);
+#elif defined(ESP32)
+		digitalWrite(pin, val);
+#endif
 	}
 
 	inline int ICACHE_RAM_ATTR espDigitalRead(uint8_t pin) {
-		return GPIP(pin);
+		int val = -1;
+#if defined(ESP8266)
+		val = GPIP(pin);
+#elif defined(ESP32)
+		val = digitalRead(pin);
+#endif
+		return val;
 	}
 
 	// communication must be reset

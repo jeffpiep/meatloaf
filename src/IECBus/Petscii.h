@@ -21,6 +21,10 @@
 
 //typedef unsigned char		u8;
 
+#ifdef ESP32
+typedef uint8_t u8;
+#endif
+
 static inline u8 ascii2petscii(u8 ch)
 {
 	if (ch > 64 && ch < 91) ch += 128;

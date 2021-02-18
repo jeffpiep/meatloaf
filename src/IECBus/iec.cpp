@@ -10,7 +10,7 @@ IEC::IEC() :
 
 // Set all IEC_signal lines in the correct mode
 //
-boolean ICACHE_RAM_ATTR IEC::init()
+boolean  IEC::init()
 {
 	// make sure the output states are initially LOW.
 	pinMode(IEC_PIN_ATN, OUTPUT);
@@ -44,12 +44,14 @@ boolean ICACHE_RAM_ATTR IEC::init()
 	return true;
 } // init
 
-byte ICACHE_RAM_ATTR IEC::timeoutWait(byte waitBit, boolean whileHigh)
+byte  IEC::timeoutWait(byte waitBit, boolean whileHigh)
 {
 	word t = 0;
 	boolean c;
 	
+#if defined(ESP8266)
 	ESP.wdtFeed();
+#endif	
 	while(t < TIMEOUT) {
 
 		// Check the waiting condition:
@@ -93,7 +95,7 @@ byte ICACHE_RAM_ATTR IEC::timeoutWait(byte waitBit, boolean whileHigh)
 // Might set flags in iec_state
 //
 // FIXME: m_iec might be better returning bool and returning read byte as reference in order to indicate any error.
-byte ICACHE_RAM_ATTR IEC::receiveByte(void)
+byte  IEC::receiveByte(void)
 {
 	m_state = noFlags;
 
@@ -131,7 +133,9 @@ byte ICACHE_RAM_ATTR IEC::receiveByte(void)
 
 	byte data = 0;
 	// Get the bits, sampling on clock rising edge:
+#if defined(ESP8266)
 	ESP.wdtFeed();
+#endif	
 	for(n = 0; n < 8; n++) {
 		data >>= 1;
 		if(timeoutWait(IEC_PIN_CLOCK, false))
@@ -153,7 +157,7 @@ byte ICACHE_RAM_ATTR IEC::receiveByte(void)
 //
 // Sends the byte and can signal EOI
 //
-boolean ICACHE_RAM_ATTR IEC::sendByte(byte data, boolean signalEOI)
+boolean  IEC::sendByte(byte data, boolean signalEOI)
 {
 	// //Listener must have accepted previous data
 	// if(timeoutWait(IEC_PIN_DATA, true))
@@ -184,7 +188,9 @@ boolean ICACHE_RAM_ATTR IEC::sendByte(byte data, boolean signalEOI)
 	delayMicroseconds(TIMING_NO_EOI);
 
 	// Send bits
+#if defined(ESP8266)
 	ESP.wdtFeed();
+#endif	
 	for(byte n = 0; n < 8; n++) {
 		// FIXME: Here check whether data pin goes low, if so end (enter cleanup)!
 
@@ -216,7 +222,7 @@ boolean ICACHE_RAM_ATTR IEC::sendByte(byte data, boolean signalEOI)
 
 
 // IEC turnaround
-boolean ICACHE_RAM_ATTR IEC::turnAround(void)
+boolean  IEC::turnAround(void)
 {
 	debugPrintf("\r\nturnAround: ");
 
@@ -240,7 +246,7 @@ boolean ICACHE_RAM_ATTR IEC::turnAround(void)
 
 // this routine will set the direction on the bus back to normal
 // (the way it was when the computer was switched on)
-boolean ICACHE_RAM_ATTR IEC::undoTurnAround(void)
+boolean  IEC::undoTurnAround(void)
 {
 	writeDATA(true);
 	delayMicroseconds(TIMING_BIT);
@@ -273,7 +279,7 @@ boolean ICACHE_RAM_ATTR IEC::undoTurnAround(void)
 // for *this* device are dealt with.
 //
 // Return value, see IEC::ATNCheck definition.
-IEC::ATNCheck ICACHE_RAM_ATTR IEC::checkATN(ATNCmd& atn_cmd)
+IEC::ATNCheck  IEC::checkATN(ATNCmd& atn_cmd)
 {
 	ATNCheck ret = ATN_IDLE;
 	byte i = 0;
@@ -366,7 +372,7 @@ IEC::ATNCheck ICACHE_RAM_ATTR IEC::checkATN(ATNCmd& atn_cmd)
 	return ret;
 } // checkATN
 
-IEC::ATNCheck ICACHE_RAM_ATTR IEC::deviceListen(ATNCmd& atn_cmd)
+IEC::ATNCheck  IEC::deviceListen(ATNCmd& atn_cmd)
 {
 	byte i=0;
 	ATNCommand c;
@@ -428,12 +434,12 @@ IEC::ATNCheck ICACHE_RAM_ATTR IEC::deviceListen(ATNCmd& atn_cmd)
 	return ATN_IDLE;
 }
 
-IEC::ATNCheck ICACHE_RAM_ATTR IEC::deviceUnListen(ATNCmd& atn_cmd)
+IEC::ATNCheck  IEC::deviceUnListen(ATNCmd& atn_cmd)
 {
 
 }
 
-IEC::ATNCheck ICACHE_RAM_ATTR IEC::deviceTalk(ATNCmd& atn_cmd)
+IEC::ATNCheck  IEC::deviceTalk(ATNCmd& atn_cmd)
 {
 	byte i=0;
 	ATNCommand c;
@@ -466,12 +472,12 @@ IEC::ATNCheck ICACHE_RAM_ATTR IEC::deviceTalk(ATNCmd& atn_cmd)
 	return ATN_CMD_TALK;
 }
 
-IEC::ATNCheck ICACHE_RAM_ATTR IEC::deviceUnTalk(ATNCmd& atn_cmd)
+IEC::ATNCheck  IEC::deviceUnTalk(ATNCmd& atn_cmd)
 {
 
 }
 
-boolean ICACHE_RAM_ATTR IEC::checkRESET()
+boolean  IEC::checkRESET()
 {
 	//	return false;
 	//	// hmmm. Is this all todo?
@@ -481,7 +487,7 @@ boolean ICACHE_RAM_ATTR IEC::checkRESET()
 
 // IEC_receive receives a byte
 //
-byte ICACHE_RAM_ATTR IEC::receive()
+byte  IEC::receive()
 {
 	byte data;
 	data = receiveByte();
@@ -491,7 +497,7 @@ byte ICACHE_RAM_ATTR IEC::receive()
 
 // IEC_send sends a byte
 //
-boolean ICACHE_RAM_ATTR IEC::send(byte data)
+boolean  IEC::send(byte data)
 {
 #ifdef DATA_STREAM
 	debugPrintf("%.2X ", data);
@@ -502,7 +508,7 @@ boolean ICACHE_RAM_ATTR IEC::send(byte data)
 
 // Same as IEC_send, but indicating that this is the last byte.
 //
-boolean ICACHE_RAM_ATTR IEC::sendEOI(byte data)
+boolean  IEC::sendEOI(byte data)
 {
 	debugPrintf("\r\nEOI Sent!");
 	if(sendByte(data, true)) {
@@ -522,7 +528,7 @@ boolean ICACHE_RAM_ATTR IEC::sendEOI(byte data)
 
 // A special send command that informs file not found condition
 //
-boolean ICACHE_RAM_ATTR IEC::sendFNF()
+boolean  IEC::sendFNF()
 {
 	// Message file not found by just releasing lines
 	writeDATA(false);
@@ -539,12 +545,12 @@ boolean ICACHE_RAM_ATTR IEC::sendFNF()
 
 
 
-bool ICACHE_RAM_ATTR IEC::isDeviceEnabled(const byte deviceNumber)
+bool  IEC::isDeviceEnabled(const byte deviceNumber)
 {
 	return (enabledDevices & (1<<deviceNumber));
 } // isDeviceEnabled
 
-IEC::IECState ICACHE_RAM_ATTR IEC::state() const
+IEC::IECState  IEC::state() const
 {
 	return static_cast<IECState>(m_state);
 } // state

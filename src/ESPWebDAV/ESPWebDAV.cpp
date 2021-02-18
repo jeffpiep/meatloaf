@@ -1,18 +1,59 @@
 // WebDAV server using ESP8266 and SD card filesystem
 // Targeting Windows 7 Explorer WebDav
 
+
+#if defined(ESP32)
+#include <WiFi.h>
+// https://www.mischianti.org/2020/11/09/web-server-with-esp8266-and-esp32-manage-security-and-authentication-4/
+#include "mbedtls/md.h"
+#elif defined(ESP8266)
 #include <ESP8266WiFi.h>
-#include <SPI.h>
 #include <Hash.h>
+#endif
+
+#include <SPI.h>
 #include <time.h>
 
 #include "ESPWebDAV.h"
-
 
 // define cal constants
 const char *months[] PROGMEM = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 const char *wdays[] PROGMEM = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 
+#if defined(ESP32)
+String sha1(String payloadStr){
+// https://www.mischianti.org/2020/11/09/web-server-with-esp8266-and-esp32-manage-security-and-authentication-4/
+    const char *payload = payloadStr.c_str();
+ 
+    int size = 20;
+ 
+    byte shaResult[size];
+ 
+    mbedtls_md_context_t ctx;
+    mbedtls_md_type_t md_type = MBEDTLS_MD_SHA1;
+ 
+    const size_t payloadLength = strlen(payload);
+ 
+    mbedtls_md_init(&ctx);
+    mbedtls_md_setup(&ctx, mbedtls_md_info_from_type(md_type), 0);
+    mbedtls_md_starts(&ctx);
+    mbedtls_md_update(&ctx, (const unsigned char *) payload, payloadLength);
+    mbedtls_md_finish(&ctx, shaResult);
+    mbedtls_md_free(&ctx);
+ 
+    String hashStr = "";
+ 
+    for(uint16_t i = 0; i < size; i++) {
+        String hex = String(shaResult[i], HEX);
+        if(hex.length() < 2) {
+            hex = "0" + hex;
+        }
+        hashStr += hex;
+    }
+ 
+    return hashStr;
+}
+#endif
 
 // ------------------------
 bool ESPWebDAV::init(int serverPort, FS* fileSystem) {
@@ -350,7 +391,7 @@ void ESPWebDAV::handleGet(ResourceType resource, bool isGet)	{
 	if(resource != RESOURCE_FILE)
 		return handleNotFound();
 
-	long tStart = millis();
+	long tStart = millis(); // used in debugPrint below
 	uint8_t buf[1460];
 	File rFile = m_fileSystem->open(uri.c_str(), "r");
 
@@ -433,9 +474,11 @@ void ESPWebDAV::handlePut(ResourceType resource)	{
 		if(numRemaining)
 			return handleWriteError(F("Timed out waiting for data"), &nFile);
 
+#if defined(ESP8266)
 		// truncate the file to right length
 		if(!nFile.truncate(contentLen))
 			return handleWriteError(F("Unable to truncate the file"), &nFile);
+#endif
 
 		nFile.close();
 		debugPrint(F("File ")); debugPrint(contentLen - numRemaining); debugPrint(F(" bytes stored in: ")); debugPrint((millis() - tStart)/1000); debugPrintln(F(" sec"));
@@ -549,12 +592,14 @@ int ESPWebDAV::deleteRecursive(String path) {
 		return iCount;
 	}
 
+#if defined(ESP8266)
 	// Otherwise delete its contents first
 	Dir dir = m_fileSystem->openDir(path);
 
 	while (dir.next()) {
 		deleteRecursive(path + '/' + dir.fileName());
 	}
+#endif
 
 	// Then delete the folder itself
 	m_fileSystem->rmdir(path);

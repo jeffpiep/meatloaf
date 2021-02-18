@@ -1,9 +1,15 @@
 #ifndef ESPMODEM_H
 #define ESPMODEM_H
 
+#if defined(ESP32)
+#include <WiFi.h>
+#include <HTTPClient.h>
+#elif defined(ESP8266)
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
 #include <ESP8266httpUpdate.h>
+#endif
+
 #include <WiFiClient.h>
 #include <WiFiServer.h>
 #include <EEPROM.h>
@@ -32,8 +38,8 @@
 #define STATIC_MASK     110  // length 4, for future use
 #define BAUD_ADDRESS    111
 #define ECHO_ADDRESS    112
-#define SERVER_PORT_ADDRESS 113 // 2 bytes
-#define AUTO_ANSWER_ADDRESS 115 // 1 byte
+#define SERVEResult_PORT_ADDRESS 113 // 2 bytes
+#define AUTO_ANSWEResult_ADDRESS 115 // 1 byte
 #define TELNET_ADDRESS  116     // 1 byte
 #define VERBOSE_ADDRESS 117
 #define PET_TRANSLATE_ADDRESS 118
@@ -70,15 +76,15 @@ public:
     String resultCodes[9] = { "OK", "CONNECT", "RING", "NO CARRIER", "ERROR", "", "NO DIALTONE", "BUSY", "NO ANSWER" };
 
     enum resultCodes_t { 
-        R_OK, 
-        R_CONNECT, 
-        R_RING, 
-        R_NOCARRIER, 
-        R_ERROR, 
-        R_NONE, 
-        R_NODIALTONE, 
-        R_BUSY, 
-        R_NOANSWER 
+        Result_OK, 
+        Result_CONNECT, 
+        Result_RING, 
+        Result_NOCARRIER, 
+        Result_ERROR, 
+        Result_NONE, 
+        Result_NODIALTONE, 
+        Result_BUSY, 
+        Result_NOANSWER 
     };
 
     enum flowControl_t { 
@@ -149,7 +155,9 @@ public:
     void waitForSpace();
     void displayHelp();
     void storeSpeedDial(byte num, String location);
+#if defined(ESP8266)
     bool startWPSConnect();
+#endif
 
     String ipToString(IPAddress ip);
     void hangUp();
