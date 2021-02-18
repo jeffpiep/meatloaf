@@ -16,6 +16,7 @@
 
 #include "global_defines.h"
 #include "fs_config.h"
+#include <SPIFFS.h>
 //#include "SerialCommand.h"
 
 #include "IECBus/iec.h"
@@ -101,6 +102,9 @@ void setup()
 
 #if defined(ESP8266)
 	if (!fileSystem->begin())
+#elif defined(ESP32)
+	if (!SPIFFS.begin())
+#endif
 	{
 		// File System failed
 		statusMessage = "Failed to initialize file system";
@@ -109,7 +113,7 @@ void setup()
 		initFailed = true;
 	}
 	else
-#endif
+	//#endif
 	{
 		Serial.println(F("Flash File System started"));
 

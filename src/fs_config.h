@@ -7,6 +7,7 @@
 #endif
 	#include <FS.h>
 	FS* fileSystem = &SPIFFS;
+	
 #if defined(ESP8266)
 	SPIFFSConfig fileSystemConfig = SPIFFSConfig();
 #endif
