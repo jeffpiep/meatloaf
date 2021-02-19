@@ -509,13 +509,15 @@ void ESPModem::setup() {
 
   readSettings();
   // Fetch baud rate from EEPROM
-  serialspeed = EEPROM.read(BAUD_ADDRESS);
+  serialspeed = 11; //EEPROM.read(BAUD_ADDRESS);
   // Check if it's out of bounds-- we have to be able to talk
   if (serialspeed < 0 || serialspeed > sizeof(bauds)) {
     serialspeed = 2; // 2400
   }
 
   Serial.begin(bauds[serialspeed]);
+	Serial.print(F("Starting Virtual Modem: %d"));
+  Serial.println(bauds[serialspeed]);
 
 //   char c;
 //   //unsigned long startMillis = millis();

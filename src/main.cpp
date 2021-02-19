@@ -68,7 +68,7 @@ void setup()
 	// WiFi.setPhyMode(WIFI_PHY_MODE_11N);
 	// WiFi.hostname(HOSTNAME);
 	delay(1000);
-	Serial.begin(115200); // for debug
+	//Serial.begin(115200); // for debug
 	// WiFi.begin(ssid, password);
 	// Serial.println("");
 
@@ -101,7 +101,9 @@ void setup()
 
 #if defined(ESP8266)
 	if (!fileSystem->begin())
-#elif defined(ESP32)
+#elif defined(ESP32) && defined(USE_LITTLEFS)
+	if (!LITTLEFS.begin()) // not sure why pointer is not working
+#else
 	if (!SPIFFS.begin()) // not sure why pointer is not working
 #endif
 	{
