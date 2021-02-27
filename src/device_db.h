@@ -7,7 +7,11 @@
 #if defined(USE_SPIFFS)
 #include <SPIFFS.h>
 #elif defined(USE_LITTLEFS)
+#if defined(ESP8266)
 #include <LittleFS.h>
+#elif defined(ESP32)
+#include <LITTLEFS.h>
+#endif
 #endif
 
 #define RECORD_SIZE 256

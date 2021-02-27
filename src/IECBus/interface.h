@@ -119,7 +119,7 @@ private:
 #if defined(USE_SPIFFS)
 #include <SPIFFS.h>
 #elif defined(USE_LITTLEFS)
-#include <LittleFS.h>
+#include <LITTLEFS.h>
 #endif
 
 #include "global_defines.h"
