@@ -1,6 +1,8 @@
 #ifndef CONFIG_FS_H
 #define CONFIG_FS_H
 
+#define FORMAT_LITTLEFS_IF_FAILED true
+
 #if defined(USE_SPIFFS)
 #if defined(ESP32)
 	#include <SPIFFS.h>
@@ -12,9 +14,15 @@
 	SPIFFSConfig fileSystemConfig = SPIFFSConfig();
 #endif
 #elif defined USE_LITTLEFS
+#if defined(ESP8266)
 	#include <LittleFS.h>
 	FS* fileSystem = &LittleFS;
 	LittleFSConfig fileSystemConfig = LittleFSConfig();	
+#endif
+#if defined(ESP32)
+	#include <LITTLEFS.h>
+	FS* fileSystem = &LITTLEFS;
+#endif
 #elif defined USE_SDFS
 	#include <SDFS.h>
 	#define CHIP_SELECT_PIN	15

@@ -113,21 +113,10 @@ bool DeviceDB::select(byte new_device)
         return true;
     }
 
-    File f_database = m_fileSystem->open(database, "r+");
+    // Flush record to database
+    save();
 
-    // If m_dirty then flush record to database
-    if ( m_dirty )
-    {
-        offset = device * RECORD_SIZE;
-        debugPrintf("\r\nDeviceDB::select m_dirty: %d, %.4X", device, offset);
-        f_database.seek( offset, SeekSet );
-#if defined(ESP32)
-        f_database.write((const uint8_t *)m_device.as<String>().c_str(),strlen(m_device.as<String>().c_str()));
-#elif defined(ESP8266)
-        f_database.write(m_device.as<String>().c_str());
-#endif
-        m_dirty = false;
-    }
+    File f_database = m_fileSystem->open(database, "r+");
 
     // Select new record
     offset = new_device * RECORD_SIZE;
@@ -144,6 +133,31 @@ bool DeviceDB::select(byte new_device)
     //m_device["device"] = new_device;
 
     f_database.close();
+    return true;
+}
+
+bool DeviceDB::save()
+{
+    // Only save if dirty
+    if ( m_dirty )
+    {
+        uint32_t offset;
+        byte device = m_device["device"];
+
+        File f_database = m_fileSystem->open(database, "r+");
+
+        offset = device * RECORD_SIZE;
+        debugPrintf("\r\nDeviceDB::select m_dirty: %d, %.4X", device, offset);
+        f_database.seek( offset, SeekSet );
+    #if defined(ESP32)
+        f_database.write((const uint8_t *)m_device.as<String>().c_str(),strlen(m_device.as<String>().c_str()));
+    #elif defined(ESP8266)
+        f_database.write(m_device.as<String>().c_str());
+    #endif
+        m_dirty = false;
+        f_database.close();
+    }
+
     return true;
 }
 

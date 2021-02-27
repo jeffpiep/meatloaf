@@ -206,10 +206,10 @@ byte Interface::loop(void)
 	//	}
 	//#endif
 	// Wait for it to get out of reset.
-	while (m_iec.checkRESET())
-	{
-		debugPrintln("ATN_RESET");
-	}
+	//while (m_iec.checkRESET())
+	//{
+	//	debugPrintln("ATN_RESET");
+	//}
 
 	//	noInterrupts();
 	IEC::ATNCheck retATN = m_iec.checkATN(m_atn_cmd);
@@ -713,6 +713,9 @@ void Interface::sendFile()
 
 	ba[8] = '\0';
 
+	// Update device database
+	m_device.save();
+
 	// Find first program
 	if (m_filename.endsWith("*"))
 	{
@@ -746,8 +749,9 @@ void Interface::sendFile()
 	else
 	{
 		size_t len = file.size();
-
-		debugPrintf("\r\nsendFile: [%s] (%d bytes)\r\n=================================\r\n", inFile.c_str(), len);
+#ifdef DATA_STREAM
+		Serial.printf("\r\nsendFile: [%s] (%d bytes)\r\n=================================\r\n", inFile.c_str(), len);
+#endif
 		for (i = 0; success and i < len; ++i)
 		{ // End if sending to CBM fails.
 			success = file.readBytes(b, 1);
@@ -762,14 +766,17 @@ void Interface::sendFile()
 
 #ifdef DATA_STREAM
 			// Show ASCII Data
-			if (b[0] < 32 || b[0] == 127)
+			Serial.printf("%.2X ", b[0]);
+
+			if (b[0] < 32 || b[0] >= 127)
 				b[0] = 46;
 
 			ba[bi] = b[0];
 			bi++;
-			if (bi == 8)
+			if (bi == 8 || i == len)
 			{
-				debugPrintf(" %s\r\n", ba);
+				size_t t = (i * 100) / len;
+				Serial.printf(" %s (%d %d%%)\r\n", ba, i, t);
 				bi = 0;
 			}
 #endif
@@ -778,20 +785,21 @@ void Interface::sendFile()
 			if (i % 50 == 0)
 				toggleLED(true);
 
-			printProgress(len, i);
 		}
 		file.close();
-		debugPrintln("");
-		debugPrintf("%d bytes sent\r\n", i);
+#ifdef DATA_STREAM
+		Serial.println("");
+		Serial.printf("%d of %d bytes sent\r\n", i, len);
+#endif
 		ledON();
 
-		if (!success)
+		if (!success || i != len)
 		{
 			bool s1 = m_iec.readATN();
 			bool s2 = m_iec.readCLOCK();
 			bool s3 = m_iec.readDATA();
 
-			debugPrintf("Transfer failed! %d, %d, %d\r\n", s1, s2, s3);
+			Serial.printf("Transfer failed! %d, %d, %d\r\n", s1, s2, s3);
 		}
 	}
 } // sendFile
@@ -913,6 +921,9 @@ void Interface::sendFileHTTP()
 
 	ba[8] = '\0';
 
+	// Update device database
+	m_device.save();
+
 	debugPrintf("\r\nsendFileHTTP: ");
 
 	String user_agent(String(PRODUCT_ID) + " [" + String(FW_VERSION) + "]");
@@ -946,7 +957,9 @@ void Interface::sendFileHTTP()
 	{
 		size_t len = client.getSize();
 
-		debugPrintf("\r\nsendFileHTTP: %d bytes\r\n=================================\r\n", len);
+#ifdef DATA_STREAM
+		Serial.printf("\r\nsendFileHTTP: %d bytes\r\n=================================\r\n", len);
+#endif
 		for (i = 0; success and i < len; ++i)
 		{ // End if sending to CBM fails.
 			success = file.readBytes(b, 1);
@@ -961,14 +974,17 @@ void Interface::sendFileHTTP()
 
 #ifdef DATA_STREAM
 			// Show ASCII Data
-			if (b[0] < 32 || b[0] == 127)
+			Serial.printf("%.2X ", b[0]);
+
+			if (b[0] < 32 || b[0] >= 127)
 				b[0] = 46;
 
 			ba[bi] = b[0];
 			bi++;
-			if (bi == 8)
+			if (bi == 8 || i == len)
 			{
-				debugPrintf(" %s\r\n", ba);
+				size_t t = (i * 100) / len;
+				Serial.printf(" %s (%d %d%%)\r\n", ba, i, t);
 				bi = 0;
 			}
 #endif
@@ -977,14 +993,15 @@ void Interface::sendFileHTTP()
 			if (i % 50 == 0)
 				toggleLED(true);
 
-			printProgress(len, i);
 		}
 		client.end();
-		debugPrintln("");
-		debugPrintf("%d bytes sent\r\n", i);
+#ifdef DATA_STREAM
+		Serial.println("");
+		Serial.printf("%d of %d bytes sent\r\n", i, len);
+#endif
 		ledON();
 
-		if (!success)
+		if (!success || i != len)
 		{
 			bool s1 = m_iec.readATN();
 			bool s2 = m_iec.readCLOCK();
@@ -1202,10 +1219,10 @@ byte Interface::loop(void)
     //	}
     //#endif
     // Wait for it to get out of reset.
-    while (m_iec.checkRESET())
-    {
-        debugPrintln("ATN_RESET");
-    }
+    //while (m_iec.checkRESET())
+    //{
+    //    debugPrintln("ATN_RESET");
+    //}
 
     //	noInterrupts();
     IEC::ATNCheck retATN = m_iec.checkATN(m_atn_cmd);

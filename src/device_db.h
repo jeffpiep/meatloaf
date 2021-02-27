@@ -24,6 +24,7 @@ public:
 
     bool init(String database);
     bool check();
+    bool save();
 
     String database;
 
@@ -38,7 +39,7 @@ public:
     String path();
     void path(String path);
     String image();
-    void image(String disk);
+    void image(String image);
 
     bool select(byte device);
 
