@@ -102,9 +102,9 @@ void setup()
 #if defined(ESP8266)
 	if (!fileSystem->begin())
 #elif defined(ESP32) && defined(USE_LITTLEFS)
-	if (!LITTLEFS.begin()) // not sure why pointer is not working
+	if (!LITTLEFS.begin()) // have to call explicitly because base class FS does not have begin()
 #else
-	if (!SPIFFS.begin()) // not sure why pointer is not working
+	if (!SPIFFS.begin()) // have to call explicitly because base class FS does not have begin()
 #endif
 	{
 		// File System failed

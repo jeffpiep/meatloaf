@@ -34,9 +34,15 @@
 
 #if defined(ESP32)
 // ESP32 GPIO to C64 IEC Serial Port
-#define IEC_PIN_ATN          39    // IO39 CMD
-#define IEC_PIN_CLOCK        27    // IO27 CKIN
-#define IEC_PIN_DATA         32    // IO32 CKOUT
+#if defined(JEFFPINS)
+#define IEC_PIN_ATN          16    // IO39 CMD
+#define IEC_PIN_CLOCK        17    // IO27 CKIN
+#define IEC_PIN_DATA         18    // IO32 CKOUT
+#else
+#define IEC_PIN_ATN 39   // IO39 CMD
+#define IEC_PIN_CLOCK 27 // IO27 CKIN
+#define IEC_PIN_DATA 32  // IO32 CKOUT
+#endif
 //#define IEC_PIN_SRQ         26    // IO26 INT
 //#define IEC_PIN_RESET       21    // IO15
 #elif defined(ESP8266)
